@@ -5,7 +5,7 @@ Created on 18.06.2018
 @author: Kevin
 '''
 
-import pandas as pa
+import pandas as pd
 from pandas.io.parsers import read_csv
 
 
@@ -13,15 +13,15 @@ from pandas.io.parsers import read_csv
 def readF(var):
     #speichert Dataframe in output
     #liest den Dateipfad var aus, teilt columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
-    output = read_csv(var, delimiter= ';', header = 0, dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str}) # type = pandas.core.frame.DataFrame
+    df = read_csv(var, delimiter= ';', header = 0, dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str}) # type = pandas.core.frame.DataFrame
 
     #OUTDATED
     #Feld "Dates" zu "Date" und "Time" teilen:
     #output['Date'], output['Time'] = output['Dates'].str.split(' ', 1).str
 
-    with pa.option_context('display.max_rows', 11, 'display.max_columns', 200):
+    with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(output.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
-        print(output)
+        print(df)
         
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
         #print(output.loc[output['Resolution'] == 'NONE'])
@@ -40,7 +40,7 @@ def readF(var):
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         
         #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
-        return output
+        return df
         
 
 
