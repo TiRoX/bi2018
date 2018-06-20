@@ -11,34 +11,40 @@ from pandas.io.parsers import read_csv
 
 
 def readF(var):
-
+    #speichert Dataframe in output
+    #liest den Dateipfad var aus, teilt columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     output = read_csv(var, delimiter= ';', header = 0, dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str}) # type = pandas.core.frame.DataFrame
 
     #OUTDATED
-    #split Dates
+    #Feld "Dates" zu "Date" und "Time" teilen:
     #output['Date'], output['Time'] = output['Dates'].str.split(' ', 1).str
 
     with pa.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(output.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         print(output)
         
-        # Abfrage für bestimmten Wert in Spalte
+        # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
         #print(output.loc[output['Resolution'] == 'NONE'])
         
-        #Will suchen nach 'OWNING' im Feld 'Descript'; um das zu tun müssen ggf. Descript Felder in Liste umgewandelt werden. :)
+        #Entfernt alle Einträge "NONE" aus der Spalte "Resolution"
+        #print(output.ix[~(output['Resolution'] != 'NONE')])
+
+        
+        #Will suchen nach 'OWNING' im Feld 'Descript'; um das zu tun müssen ggf. Descript Felder in Liste umgewandelt werden. oider einzelnd in CSV ausgelesen werden
         #print(output.loc[output['Descript'].isin('OWNING')])
         
+        #Viele kompakte leicht zu verstehende Informationen auf Code Basis sind hier zu finden -v
         #further use: https://www.shanelynn.ie/using-pandas-dataframe-creating-editing-viewing-data-in-python/
         
-        #duplicates?
+        #existieren duplicates?
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         
-        #selecting
-        #print(output.ix[output['Resolution'] != 'NONE'])
-        #removing
-        #print(output.ix[~(output['Resolution'] != 'NONE')])
-        #return output
+        #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
+        return output
+        
 
-#Class has to be in same directory as the .csv
+
+
+#Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
 #readF('train.csv')
 readF('train_prepared.csv')
