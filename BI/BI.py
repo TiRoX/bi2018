@@ -13,7 +13,7 @@ from pandas.io.parsers import read_csv
 def readF(var):
     #speichert Dataframe in output
     #liest den Dateipfad var aus, teilt columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
-    df = read_csv(var, delimiter= ';', quotechar='"', header = 0, dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AddressSuffix": str, "X": str, "Y": str}) # type = pandas.core.frame.DataFrame
+    df = read_csv(var, delimiter= ',', quotechar='"', header = 0, dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AddressSuffix": str, "X": str, "Y": str}) # type = pandas.core.frame.DataFrame
 
     #OUTDATED
     #Feld "Dates" zu "Date" und "Time" teilen:
