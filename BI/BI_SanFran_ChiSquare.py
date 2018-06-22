@@ -1,3 +1,4 @@
+
 #Module importieren
 import pandas as pd
 import datetime as dt
@@ -9,23 +10,28 @@ from scipy.stats import chi2_contingency #für chi²
 #Import of Train.csv
 def readF(var):
     df = pd.read_csv(var, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
-    #OUTDATED
-    #Feld "Dates" zu "Date" und "Time" teilen:
-    #output['Date'], output['Time'] = output['Dates'].str.split(' ', 1).str
 
+    #Feld "Dates" zu "Date" und "Time" teilen:
+    a, b = df['Dates'].str.split(' ', 1).str
+    sequence = ['Date','Time','Category','Descript', 'DayOfWeek','PdDistrict', 'Resolution','Address','X','Y']
+    df = df.reindex(columns=sequence)
+    df.loc[:,'Date'] = a
+    df.loc[:,'Time']= b
+    
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        #print(output.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
+        #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         print(df)
 
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
         #print(output.loc[output['Resolution'] == 'NONE'])
 
         #Entfernt alle Einträge "NONE" aus der Spalte "Resolution"
-        #print(output.ix[~(output['Resolution'] != 'NONE')])
+        #print("Hier werden die zu löschenden Inhalte ausgegeben.")
+        #print(df.loc[~(df['Resolution'] != 'NONE')])
 
-
+        
         #Will suchen nach 'OWNING' im Feld 'Descript'; um das zu tun müssen ggf. Descript Felder in Liste umgewandelt werden. oider einzelnd in CSV ausgelesen werden
-        #print(output.loc[output['Descript'].isin('OWNING')])
+        #print(df.loc[output['Descript'].isin('OWNING')])
 
         #Viele kompakte leicht zu verstehende Informationen auf Code Basis sind hier zu finden -v
         #further use: https://www.shanelynn.ie/using-pandas-dataframe-creating-editing-viewing-data-in-python/
@@ -38,9 +44,9 @@ def readF(var):
         
 #Data Understanding
 #
-df = readF('train_prepared.csv')
-df.shape
-df.dtypes #Überprüfen ob alle Spalten nur aus Einträgen eines Typs bestehen
+df = readF("C:/Users/fmert/Python_CodeComa/train.csv")
+#df.shape
+#df.dtypes #Überprüfen ob alle Spalten nur aus Einträgen eines Typs bestehen
 
 #Data Preparation
 #
@@ -82,8 +88,12 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
         self.p = p
         self.chi2 = chi2
         self.dof = dof 
-    
+        #print("Observed")
+        #print(self.dfObserved)
+        
         self.dfExpected = pd.DataFrame(expected, columns=self.dfObserved.columns, index = self.dfObserved.index)
+        #print("Expected")
+        #print(self.dfExpected)
         
         self._print_chisquare_result(colX, alpha)
 
@@ -91,8 +101,8 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
 cT = ChiSquare(df)
 
 #Feature Selection
-testColumns = ["Category","Descript","DayOfWeek","PdDistrict"]
+testColumns = ["Resolution","Descript","DayOfWeek","PdDistrict"]
 for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
-    cT.TestIndependence(colX=var,colY="Resolution") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
+    cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
-df #Dataframe als Tabelle
+#df #Dataframe als Tabelle
