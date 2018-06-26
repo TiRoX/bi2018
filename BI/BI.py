@@ -9,18 +9,30 @@ Created on 18.06.2018
 #Module importieren
 import pandas as pd
 import scipy.stats as stats
+import lightgbm
+import argparse
+import json
+
 
 def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
-    df = readF("rewritten.csv")
-    cT = ChiSquare(df) #
-    useChi(cT) #gibt aus, welche Columns "important" sind für "Category"
+    df = readF("rewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
+    test = readF('testrewritten.csv', False)
+    df
+    #cT = ChiSquare(df) #
+    #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
+    
+    
+    
 
 
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
-def readF(var):
-    df = pd.read_csv(var, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
+def readF(path, index): #index == True, wenn Index vorhanden
+    if (index == True):
+        df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False, index_col = 0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
+    else: 
+        df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         #print(df)
@@ -86,15 +98,26 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
 
 #Feature Selection
 def useChi(cT):
-    testColumns = ["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "X", "Y"]
+    testColumns = ["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 
+def train():
+    params = {}
+    params['learning_rate'] = 0.003
+    params['boosting_type'] = 'gbdt'
+    params['objective'] = 'binary'
+    params['metric'] = 'binary_logloss'
+    params['sub_feature'] = 0.5
+    params['num_leaves'] = 10
+    params['min_data'] = 50
+    params['max_depth'] = 10
+        
+    
 
 
 
-
-#Aufrufen der Ausführung, bitte ganz unten des Files
+#Aufrufen der Ausführung, bitte ganz unten
 main()
 

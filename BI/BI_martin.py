@@ -77,13 +77,18 @@ def get_season(row):
         return "AUTUMN"
     else: return "WINTER"
 
-def write_csv(df):
-    if(os.stat('rewritten.csv').st_size == 0):
-        df.to_csv(path_or_buf = 'rewritten.csv' ,sep=',')
+def write_csv(df, name):
+    rdstr = ".csv"
+    path = name + rdstr
+    print(path)
+    if(os.path.isfile(path) == False):
+        df.to_csv(path_or_buf = path ,sep=',')
     else:
-        print ('Writing didnt work, cuz File is already there')
+        print ('Writing didnt work, cuz File is already there, pls delete in before')
 
 
 #Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
-df = readF('train.csv')
-write_csv(df)
+df1 = readF('train.csv')
+write_csv(df1, 'rewritten')
+df2 = readF('test.csv')
+write_csv(df2, 'testrewritten')
