@@ -87,7 +87,6 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
 #Feature Selection
 def useChi(cT):
     testColumns = ["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "X", "Y"]
-    result = []
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
