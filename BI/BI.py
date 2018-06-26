@@ -10,8 +10,7 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 import lightgbm
-import argparse
-import json
+
 
 
 def main():
@@ -19,7 +18,9 @@ def main():
     #Einlesen des Files
     df = readF("rewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
     test = readF('testrewritten.csv', False)
-    df
+    print(df)
+    resulttrain = train(df)
+    print (resulttrain)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     
@@ -103,16 +104,39 @@ def useChi(cT):
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 
-def train():
+def train(df):
     params = {}
+    params['task'] = 'train'
     params['learning_rate'] = 0.003
     params['boosting_type'] = 'gbdt'
-    params['objective'] = 'binary'
-    params['metric'] = 'binary_logloss'
+    params['objective'] = 'multiclass'
+    params['metric'] = 'multi_logloss'
     params['sub_feature'] = 0.5
     params['num_leaves'] = 10
     params['min_data'] = 50
     params['max_depth'] = 10
+    """   'task': 'train',
+    'boosting_type': 'gbdt',
+    'objective': 'regression',
+    'metric': {'l2', 'auc'},
+    'num_leaves': 31,
+    'learning_rate': 0.05,
+    'feature_fraction': 0.9,
+    'bagging_fraction': 0.8,
+    'bagging_freq': 5,
+    'verbose': 0"""
+    
+    y_train = df[0].values
+    x_train = df.drop(0, axis=1).values
+    
+    lgb_train = lightgbm.Dataset(x_train, y_train)
+    #lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
+    
+    #sc = StandardScaler()
+    #ds = sc.fit_transform(X=df, y=None)
+  
+    clf = lightgbm.train(params, lgb_train, 100, num_boost_round=20)
+    return clf
         
     
 
