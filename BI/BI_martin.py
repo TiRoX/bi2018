@@ -7,8 +7,8 @@ Created on 18.06.2018
 
 import pandas as pd
 from pandas.io.parsers import read_csv
-from numpy import nan
 import numpy as np
+import os
 
 
 def readF(var):
@@ -52,6 +52,7 @@ def readF(var):
     else:
         df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'Category', 'Descript', 'DayOfWeek', 'PdDistrict', 'Resolution', 'Address', 'AddressSuffix', 'X', 'Y'])
 
+
     with pd.option_context('display.max_rows', 19, 'display.max_columns', 200):
         #print(output.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         print(df)
@@ -84,9 +85,18 @@ def get_season(row):
         return "AUTUMN"
     else: return "WINTER"
 
+def write_csv(df, name):
+    rdstr = ".csv"
+    path = name + rdstr
+    print(path)
+    if(os.path.isfile(path) == False):
+        df.to_csv(path_or_buf = path ,sep=',', index=False)
+    else:
+        print ('Writing didnt work, cuz File is already there, pls delete in before')
 
 
 #Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
-#readF('train.csv')
-readF('train.csv')
-readF('test.csv')
+df1 = readF('train.csv')
+write_csv(df1, 'trainrewritten')
+df2 = readF('test.csv')
+write_csv(df2, 'testrewritten')
