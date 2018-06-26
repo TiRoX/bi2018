@@ -7,8 +7,8 @@ Created on 18.06.2018
 
 import pandas as pd
 from pandas.io.parsers import read_csv
-from numpy import nan
 import numpy as np
+import os
 
 
 def readF(var):
@@ -77,8 +77,13 @@ def get_season(row):
         return "AUTUMN"
     else: return "WINTER"
 
+def write_csv(df):
+    if(os.stat('rewritten.csv').st_size == 0):
+        df.to_csv(path_or_buf = 'rewritten.csv' ,sep=',')
+    else:
+        print ('Writing didnt work, cuz File is already there')
 
 
 #Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
-#readF('train.csv')
-readF('train.csv')
+df = readF('train.csv')
+write_csv(df)
