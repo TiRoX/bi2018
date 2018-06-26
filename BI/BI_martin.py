@@ -16,7 +16,11 @@ def readF(var):
     #liest den Dateipfad var aus, teilt columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     #ALT:
     #df = read_csv(var, delimiter= ',', quotechar='"', header = 0, dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AddressSuffix": str, "X": str, "Y": str}) # type = pandas.core.frame.DataFrame
-    df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "Category":str, "Descript":str, "DayOfWeek":str, "PdDistrict":str, "Resolution":str, "X":str, "Y":str})
+
+    if (var == 'test.csv'):
+        df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "DayOfWeek":str, "PdDistrict":str, "X":str, "Y":str})
+    else:
+        df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "Category":str, "Descript":str, "DayOfWeek":str, "PdDistrict":str, "Resolution":str, "X":str, "Y":str})
 
     #Feld "Dates" zu "Date" und "Time" teilen:
     df['Date'], df['Time'] = df['Dates'].str.split(' ', 1).str
@@ -43,7 +47,11 @@ def readF(var):
     #print(df.ix[660485])
     #print(df.ix[660486])
 
-    df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'Category', 'Descript', 'DayOfWeek', 'PdDistrict', 'Resolution', 'Address', 'AddressSuffix', 'X', 'Y'])
+    if (var == 'test.csv'):
+        df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'DayOfWeek', 'PdDistrict', 'Address', 'AddressSuffix', 'X', 'Y'])
+    else:
+        df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'Category', 'Descript', 'DayOfWeek', 'PdDistrict', 'Resolution', 'Address', 'AddressSuffix', 'X', 'Y'])
+
 
     with pd.option_context('display.max_rows', 19, 'display.max_columns', 200):
         #print(output.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
@@ -82,7 +90,7 @@ def write_csv(df, name):
     path = name + rdstr
     print(path)
     if(os.path.isfile(path) == False):
-        df.to_csv(path_or_buf = path ,sep=',')
+        df.to_csv(path_or_buf = path ,sep=',', index=False)
     else:
         print ('Writing didnt work, cuz File is already there, pls delete in before')
 
