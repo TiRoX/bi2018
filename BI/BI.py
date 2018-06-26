@@ -64,7 +64,7 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
 
         print(result)
         
-    def TestIndependence(self,colX,colY, alpha=0.05):
+    def TestIndependence(self,colX,colY, alpha=0.001): #changed from 0.05 to 0.001 --> calculated by ML soße: "alpha_range = 10.0**-np.arange(1,7)" ändert Outcome aber NICHT
         X = self.df[colX].astype(str) #Konvertierung zu String der unabhängigen Features
         Y = self.df[colY].astype(str) #Konvertierung zu String des abhängigen Features
     
