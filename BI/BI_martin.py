@@ -97,6 +97,6 @@ def write_csv(df, name):
 
 #Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
 df1 = readF('train.csv')
-write_csv(df1, 'rewritten')
+write_csv(df1, 'trainrewritten')
 df2 = readF('test.csv')
 write_csv(df2, 'testrewritten')
