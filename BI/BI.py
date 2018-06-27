@@ -9,17 +9,19 @@ Created on 18.06.2018
 #Module importieren
 import pandas as pd
 import scipy.stats as stats
-import lightgbm
-import argparse
-import json
+from sklearn import tree
 
 
 def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
-    df = readF("rewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
+    df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
+    x = train(df)
+    print(x)
+    exit()
     test = readF('testrewritten.csv', False)
-    df
+    print(test)
+    #test(test)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     
@@ -30,7 +32,7 @@ def main():
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
 def readF(path, index): #index == True, wenn Index vorhanden
     if (index == True):
-        df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False, index_col = 0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
+        df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
     else: 
         df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
@@ -103,16 +105,11 @@ def useChi(cT):
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 
-def train():
-    params = {}
-    params['learning_rate'] = 0.003
-    params['boosting_type'] = 'gbdt'
-    params['objective'] = 'binary'
-    params['metric'] = 'binary_logloss'
-    params['sub_feature'] = 0.5
-    params['num_leaves'] = 10
-    params['min_data'] = 50
-    params['max_depth'] = 10
+def train(df):
+    print(df)
+    clf = tree.DecisionTreeClassifier()
+    cl_fit = clf.fit(df[["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]], df['Category'])
+    print(cl_fit)
         
     
 
