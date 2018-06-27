@@ -17,9 +17,11 @@ def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
     df = readF("trainrewritten.csv", False) # True wenn Index im File vorhanden, wie hier.
-    test = readF('testrewritten.csv', False)
-    print(df)
-    resulttrain = train(df)
+    #test = readF('testrewritten.csv', False)
+    #df = readF("train.csv", False)
+
+    xf = df[['Year', 'Month', 'Day', 'Hour', 'X', 'Y']]
+    resulttrain = train(xf)
     print (resulttrain)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
@@ -31,12 +33,15 @@ def main():
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
 def readF(path, index): #index == True, wenn Index vorhanden
     if (index == True):
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, index_col = 0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        print ('xxx')
+        #df = pd.read_csv(path, header = 0, sep='\t' )
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, index = True, index_label = 'Id', dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     else:
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        #df = pd.read_csv(path, header = 0, sep='\t' )
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
-        #print(df)
+        print(df)
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
         #print(output.loc[output['Resolution'] == 'NONE'])
         #Entfernt alle Einträge "NONE" aus der Spalte "Resolution"
@@ -106,15 +111,15 @@ def useChi(cT):
 
 def train(df):
     params = {}
-    params['task'] = 'train'
+    #params['task'] = 'train'
     params['learning_rate'] = 0.003
-    params['boosting_type'] = 'gbdt'
-    params['objective'] = 'multiclass'
-    params['metric'] = 'multi_logloss'
-    params['sub_feature'] = 0.5
-    params['num_leaves'] = 10
-    params['min_data'] = 50
-    params['max_depth'] = 10
+    #params['boosting_type'] = 'gbdt'
+    params['objective'] = 'regression'
+    params['metric'] = 'logloss'
+    #params['sub_feature'] = 0.5
+    #params['num_leaves'] = 10
+    #params['min_data'] = 50
+    #params['max_depth'] = 10
     """   'task': 'train',
     'boosting_type': 'gbdt',
     'objective': 'regression',
@@ -128,19 +133,22 @@ def train(df):
 
     #print("*************************hallo")
     #print(df[df.columns[1]])
-    y_train = df[df.columns[0]].values
-    x_train = df.drop([0]).values
+    print(df)
+    y_train = df.iloc[0].values
+    x_train = df.drop(0).values
     #print(x_train)
     #x_train = df.drop(0, axis=1).values
-
-
+    print('y')
+    print(y_train)
+    print('x')
+    print(x_train)
     lgb_train = lightgbm.Dataset(x_train, y_train)
     #lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
 
     #sc = StandardScaler()
     #ds = sc.fit_transform(X=df, y=None)
 
-    clf = lightgbm.train(params, lgb_train, num_boost_round=100)
+    clf = lightgbm.train(params, lgb_train, 100)
     return clf
 
 
