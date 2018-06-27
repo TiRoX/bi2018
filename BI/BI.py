@@ -17,7 +17,7 @@ def main():
     #Einlesen des Files
     df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
     df1 = MultiColumnLabelEncoder().fit_transform(df)
-    test = readF('testrewritten.csv', True)
+    test = readF('testrewritten.csv', False)
     test1 = MultiColumnLabelEncoder().fit_transform(test)
     #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print (test1)
@@ -36,9 +36,11 @@ def main():
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
 def readF(path, index): #index == True, wenn Index vorhanden
     if (index == True):
-        df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
-    else: 
-        df = pd.read_csv(path, delimiter= ',', header = 0, error_bad_lines=False) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns  
+        #df = pd.read_csv(path, header = 0, sep='\t' )
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+    else:
+        #df = pd.read_csv(path, header = 0, sep='\t' )
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         #print(df)
