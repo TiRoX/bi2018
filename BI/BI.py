@@ -10,21 +10,27 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 import lightgbm
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 
 
 def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
-    df = readF("trainrewritten.csv", False) # True wenn Index im File vorhanden, wie hier.
-    #test = readF('testrewritten.csv', False)
-    #df = readF("train.csv", False)
-
-    xf = df[['Year', 'Month', 'Day', 'Hour', 'X', 'Y']]
-    resulttrain = train(xf)
-    print (resulttrain)
+    df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
+    df1 = MultiColumnLabelEncoder().fit_transform(df)
+    test = readF('testrewritten.csv', False)
+    test1 = MultiColumnLabelEncoder().fit_transform(test)
+    print (df)
+    print (test)
+    exit()
+    
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
+    resulttrain = train(df1, test1)
+    #print (resulttrain)
+
 
 
 
@@ -33,15 +39,14 @@ def main():
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
 def readF(path, index): #index == True, wenn Index vorhanden
     if (index == True):
-        print ('xxx')
-        #df = pd.read_csv(path, header = 0, sep='\t' )
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, index = True, index_label = 'Id', dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
-    else:
         #df = pd.read_csv(path, header = 0, sep='\t' )
         df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+    else:
+        #df = pd.read_csv(path, header = 0, sep='\t' )
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
-        print(df)
+        #print(df)
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
         #print(output.loc[output['Resolution'] == 'NONE'])
         #Entfernt alle Einträge "NONE" aus der Spalte "Resolution"
@@ -55,6 +60,31 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
         return df
+    
+class MultiColumnLabelEncoder:
+    def __init__(self,columns = None):
+        self.columns = columns # array of column names to encode
+
+    def fit(self,X,y=None):
+        return self # not relevant here
+
+    def transform(self,X):
+        '''
+        Transforms columns of X specified in self.columns using
+        LabelEncoder(). If no columns specified, transforms all
+        columns in X.
+        '''
+        output = X.copy()
+        if self.columns is not None:
+            for col in self.columns:
+                output[col] = LabelEncoder().fit_transform(output[col])
+        else:
+            for colname,col in output.iteritems():
+                output[colname] = LabelEncoder().fit_transform(col)
+        return output
+
+    def fit_transform(self,X,y=None):
+        return self.fit(X,y).transform(X)
 
 """
 Feature Extraction
@@ -109,7 +139,7 @@ def useChi(cT):
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 
-def train(df):
+def train(train, test):
     params = {}
     #params['task'] = 'train'
     params['learning_rate'] = 0.003
@@ -133,15 +163,17 @@ def train(df):
 
     #print("*************************hallo")
     #print(df[df.columns[1]])
-    print(df)
-    y_train = df.iloc[0].values
-    x_train = df.drop(0).values
+    y_train = train.iloc[0].values
+    x_train = train.drop(0).values
     #print(x_train)
     #x_train = df.drop(0, axis=1).values
+    print ("data", np.random.rand(500,10))
+    print ("label", np.random.randint(2, size=500))
     print('y')
     print(y_train)
     print('x')
     print(x_train)
+    exit()
     lgb_train = lightgbm.Dataset(x_train, y_train)
     #lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
 
