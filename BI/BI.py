@@ -23,9 +23,7 @@ def main():
     test = readF('testrewritten.csv', False)
     test1 = MultiColumnLabelEncoder().fit_transform(test)
     print (df)
-    print (test)
-    exit()
-    
+    print (test)    
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     resulttrain = train(df1, test1)
