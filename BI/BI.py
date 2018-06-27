@@ -10,20 +10,24 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 from sklearn import tree
-
+from sklearn.preprocessing import LabelEncoder
 
 def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
     df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
-    x = train(df)
-    print(x)
-    exit()
-    test = readF('testrewritten.csv', False)
-    print(test)
-    #test(test)
+    df1 = MultiColumnLabelEncoder().fit_transform(df)
+    test = readF('testrewritten.csv', True)
+    test1 = MultiColumnLabelEncoder().fit_transform(test)
+    #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
+        #print (test1)
+        #print (test)
+    
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
+    x = trainntest(df1, test1)
+
+
     
     
     
@@ -51,7 +55,31 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
         return df
+    
+class MultiColumnLabelEncoder:
+    def __init__(self,columns = None):
+        self.columns = columns # array of column names to encode
 
+    def fit(self,X,y=None):
+        return self # not relevant here
+
+    def transform(self,X):
+        '''
+        Transforms columns of X specified in self.columns using
+        LabelEncoder(). If no columns specified, transforms all
+        columns in X.
+        '''
+        output = X.copy()
+        if self.columns is not None:
+            for col in self.columns:
+                output[col] = LabelEncoder().fit_transform(output[col])
+        else:
+            for colname,col in output.iteritems():
+                output[colname] = LabelEncoder().fit_transform(col)
+        return output
+
+    def fit_transform(self,X,y=None):
+        return self.fit(X,y).transform(X)
 """
 Feature Extraction
 Feature Extraction mit ChiSquare Test, welcher Wert nimmt am meisten Einfluß wenn Null Hypothese gilt
@@ -105,11 +133,14 @@ def useChi(cT):
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 
-def train(df):
-    print(df)
+def trainntest(train, test):
     clf = tree.DecisionTreeClassifier()
-    cl_fit = clf.fit(df[["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]], df['Category'])
-    print(cl_fit)
+    cl_fit = clf.fit(train[["Date", "Time", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]], train['Category'])
+    cl_score = clf.score(test[["Date", "Time", "Season", "Descript", "DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]], test['Category'])
+    print ("Model Accuracy", cl_score)
+    
+    return cl_score
+
         
     
 
