@@ -58,7 +58,8 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
         return df
-    
+
+#Entnommen aus: https://stackoverflow.com/a/30267328
 class MultiColumnLabelEncoder:
     def __init__(self,columns = None):
         self.columns = columns # array of column names to encode
