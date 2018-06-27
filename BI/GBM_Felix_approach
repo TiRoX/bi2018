@@ -1,0 +1,166 @@
+#Für Data Understanding & Data Preparation
+import pandas as pd
+from pandas.io.parsers import read_csv
+import numpy as np
+import os
+from sklearn.preprocessing import LabelEncoder
+
+#Für Prodective Modelling
+import lightgbm as lgb
+import pandas as pd
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+
+#Data Understanding & Data Preparation
+def readF(var):
+    if (var == 'test.csv'):
+        df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "DayOfWeek":str, "PdDistrict":str, "X":str, "Y":str})
+    else:
+        df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "Category":str, "Descript":str, "DayOfWeek":str, "PdDistrict":str, "Resolution":str, "X":str, "Y":str})
+
+    #Feld "Dates" zu "Date" und "Time" teilen:
+    df['Date'], df['Time'] = df['Dates'].str.split(' ', 1).str
+    df['Year'] = df['Dates'].str[:4]
+    df['Month'] = df['Dates'].str[5:7]
+    df['Day'] = df['Dates'].str[8:10]
+    df['Hour'] = df['Dates'].str[11:13]
+    
+    #Nur auskommentiert wegen Laufzeit
+    """df['Season'] = df.apply(get_season, axis=1) 
+    df['AddressSuffix'] = df['Address'].str[-2:]
+    df['DayOfWeek'] = df['DayOfWeek'].str.upper()
+    df['Address'] = df['Address'].str.upper()
+
+    
+    df['X'] = df['X'].apply(lambda x: np.NaN if float(x)>=-122.3649 or float(x)<=-122.5136 else x) #X: longitude of the incident location. San Francisco city longitude ranges from -122.5136 to -122.3649. float conversion used to ensure correct comparism
+    df['Y'] = df['Y'].apply(lambda y: np.NaN if float(y)<=37.70788 or float(y)>=37.81998 else y) #Y: latitude of the incident location. San Francisco city latitude ranges from 37.70788 to 37.81998. float conversion used to ensure correct comparism
+    """
+
+    if (var == 'test.csv'):
+        df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'DayOfWeek', 'PdDistrict', 'Address', 'AddressSuffix', 'X', 'Y'])
+    else:
+        df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'Category', 'Descript', 'DayOfWeek', 'PdDistrict', 'Resolution', 'Address', 'AddressSuffix', 'X', 'Y'])
+
+
+    with pd.option_context('display.max_rows', 19, 'display.max_columns', 200):
+        return df
+
+def get_season(row):
+    if 3 <= int(row['Dates'][5:7]) <= 5:
+        return "SPRING"
+    elif 6 <= int(row['Dates'][5:7]) <= 8:
+        return "SUMMER"
+    elif 9 <= int(row['Dates'][5:7]) <= 11:
+        return "AUTUMN"
+    else: return "WINTER"
+
+def write_csv(df, name):
+    rdstr = ".csv"
+    path = name + rdstr
+    print(path)
+    if(os.path.isfile(path) == False):
+        df.to_csv(path_or_buf = path ,sep=',', index=False)
+    else:
+        print ('Writing didnt work, cuz File is already there, pls delete in before')
+
+#Funktion zum Encoding
+class MultiColumnLabelEncoder:
+    def __init__(self,columns = None):
+        self.columns = columns # array of column names to encode
+
+    def fit(self,X,y=None):
+        return self # not relevant here
+
+    def transform(self,X):
+        '''
+        Transforms columns of X specified in self.columns using
+        LabelEncoder(). If no columns specified, transforms all
+        columns in X.
+        '''
+        output = X.copy()
+        if self.columns is not None:
+            for col in self.columns:
+                output[col] = LabelEncoder().fit_transform(output[col])
+        else:
+            for colname,col in output.iteritems():
+                output[colname] = LabelEncoder().fit_transform(col)
+        return output
+
+    def fit_transform(self,X,y=None):
+        return self.fit(X,y).transform(X)
+        
+
+#Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
+df1 = readF('train.csv')
+#write_csv(df1, 'trainrewritten')
+df2 = readF('test.csv')
+#write_csv(df2, 'testrewritten')
+#print('Vor Column Label Encoder')
+#print(df1)    
+df1_trans = MultiColumnLabelEncoder(columns = ['Category','Resolution','PdDistrict']).fit_transform(df1)
+#print('Nach Column Label Encoder')
+#print(df1_trans)
+
+
+"""
+Hier fangen dann die Probleme an.
+Im Beispiel model wurden bei den Test daten einfach 
+
+"""
+
+
+df2_trans = MultiColumnLabelEncoder(columns = ['Resolution','PdDistrict']).fit_transform(df2) 
+
+#GBM Algorithm
+#
+df_train = df1_trans
+df_test = df2_trans
+#
+colY = df_train['Categories'].values # Zielvariable bzw. abhängige Variable
+colX_Res = df_train['Resolution'].values # unabhängige Variable 1 
+colX_Des = df_train['PdDistrict'].values # unabhängige Variable 2
+colX_Hor = df_train['Hour'].values # unabhängige Variable 3
+
+test_colY = df_test['Categories'].values # Existiert bei uns nicht -> vllt bereits erstellen damit reingeschrieben werden kann?
+test_colX_Res = df_test['Resolution'].values 
+test_colX_Des = df_test['PdDistrict'].values
+test_colX_Hor = df_test['Hour'].values
+
+
+
+lgb_train = lgb.Dataset(colX_Res, colX_Des , colX_Hor , colY, categorical_feature=['Categories','Resolution','PdDistrict','Hour'])
+lgb_eval = lgb.Dataset(test_colX_Res, test_colX_Des , test_colX_Hor , test_colY, reference=lgb_train)
+
+#Ab Hier nicht wirklich auf unsere Daten angepasst  
+##
+#
+params = {
+    'task': 'train',
+    'boosting_type': 'gbdt',
+    'objective': 'regression',
+    'num_leaves': 31,
+    'learning_rate': 0.05,
+    'feature_fraction': 0.9,
+    'bagging_fraction': 0.8,
+    'bagging_freq': 5,
+    'verbose': 0
+}
+
+
+print('Start training...')
+# train
+gbm = lgb.train(params,
+                lgb_train,
+                num_boost_round=20,
+                valid_sets=lgb_eval,
+                early_stopping_rounds=5)
+
+print('Save model...')
+# save model to file
+gbm.save_model('model.txt')
+
+print('Start predicting...')
+# predict
+y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration)
+# eval
+print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
