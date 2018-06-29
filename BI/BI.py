@@ -23,7 +23,7 @@ def main():
     test = readF('testrewritten.csv', False)
     test1 = MultiColumnLabelEncoder().fit_transform(test)
     print (df)
-    print (test)    
+    print (test)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     resulttrain = train(df1, test1)
@@ -143,7 +143,7 @@ def train(train, test):
     #params['task'] = 'train'
     params['learning_rate'] = 0.003
     #params['boosting_type'] = 'gbdt'
-    params['objective'] = 'regression'
+    params['objective'] = 'multiclass'
     params['metric'] = 'logloss'
     #params['sub_feature'] = 0.5
     #params['num_leaves'] = 10
@@ -166,7 +166,7 @@ def train(train, test):
     x_train = train.drop(0).values
     #print(x_train)
     #x_train = df.drop(0, axis=1).values
-    
+
     #http://lightgbm.readthedocs.io/en/latest/Python-Intro.html - how it should work
     print ("data", np.random.rand(500,10))
     print ("label", np.random.randint(2, size=500))
