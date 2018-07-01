@@ -12,6 +12,8 @@ import scipy.stats as stats
 import lightgbm
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from sklearn import preprocessing
+from bi2018.BI.data_handler import DataHandler
 
 
 
@@ -19,19 +21,25 @@ def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
     df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
-    df1 = MultiColumnLabelEncoder().fit_transform(df)
+    #df1 = MultiColumnLabelEncoder().fit_transform(df)
     test = readF('testrewritten.csv', False)
-    test1 = MultiColumnLabelEncoder().fit_transform(test)
-    print (df)
-    print (test)
+    #test1 = MultiColumnLabelEncoder().fit_transform(test)
+    #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
+        #print (df1)
+        #print (test)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
-    resulttrain = train(df1, test1)
+    dh = DataHandler()
+    dh.load_data(train=df, test=test)
+
+    data_sets = dh.transform_data()
+    resulttrain= lgbm(data_sets)
+    print(resulttrain)
+    exit()
+
+
+    #resulttrain = train(df1, test1)
     #print (resulttrain)
-
-
-
-
 
 
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
@@ -43,6 +51,7 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #df = pd.read_csv(path, header = 0, sep='\t' )
         df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
+
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         #print(df)
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
@@ -83,6 +92,8 @@ class MultiColumnLabelEncoder:
         return output
 
     def fit_transform(self,X,y=None):
+        if self.columns == 'Date':
+            return self.fit(y,X).transform(X)
         return self.fit(X,y).transform(X)
 
 """
@@ -137,17 +148,17 @@ def useChi(cT):
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
-
-def train(train, test):
+def lgbm(data_set):
     params = {}
-    #params['task'] = 'train'
+    params['task'] = 'train'
     params['learning_rate'] = 0.003
-    #params['boosting_type'] = 'gbdt'
+    params['boosting_type'] = 'goss'
     params['objective'] = 'multiclass'
-    params['metric'] = 'logloss'
+    params['numclass'] = '38'
+    params['metric'] = 'multi_logloss'
     #params['sub_feature'] = 0.5
     #params['num_leaves'] = 10
-    #params['min_data'] = 50
+    params['min_data'] = 5000
     #params['max_depth'] = 10
     """   'task': 'train',
     'boosting_type': 'gbdt',
@@ -162,8 +173,12 @@ def train(train, test):
 
     #print("*************************hallo")
     #print(df[df.columns[1]])
-    y_train = train.iloc[0].values
-    x_train = train.drop(0).values
+
+    x_train = data_set['train_X']
+    y_train = data_set['train_Y']
+    x_test = data_set['test_X']
+    #y_train = train.iloc[0].values
+    #x_train = train.drop(0).values
     #print(x_train)
     #x_train = df.drop(0, axis=1).values
 
@@ -182,6 +197,8 @@ def train(train, test):
     #ds = sc.fit_transform(X=df, y=None)
 
     clf = lightgbm.train(params, lgb_train, 100)
+    print(clf)
+    exit()
     return clf
 
 
