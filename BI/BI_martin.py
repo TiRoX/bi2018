@@ -9,6 +9,9 @@ import pandas as pd
 from pandas.io.parsers import read_csv
 import numpy as np
 import os
+from sklearn_pandas import DataFrameMapper
+from sklearn.preprocessing import StandardScaler, LabelEncoder, LabelBinarizer
+
 
 
 def readF(var):
@@ -19,7 +22,7 @@ def readF(var):
 
     if (var == 'test.csv'):
         df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "DayOfWeek":str, "PdDistrict":str, "X":str, "Y":str})
-    else:
+    elif (var == 'train.csv'):
         df = read_csv(var,delimiter=',', quotechar='"', header=0, dtype={"Dates":str, "Category":str, "Descript":str, "DayOfWeek":str, "PdDistrict":str, "Resolution":str, "X":str, "Y":str})
 
     #Feld "Dates" zu "Date" und "Time" teilen:
@@ -39,8 +42,15 @@ def readF(var):
 
     #X: longitude of the incident location. San Francisco city longitude ranges from -122.5136 to -122.3649. float conversion used to ensure correct comparism
     #Y: latitude of the incident location. San Francisco city latitude ranges from 37.70788 to 37.81998. float conversion used to ensure correct comparism
-    df['X'] = df['X'].apply(lambda x: np.NaN if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
-    df['Y'] = df['Y'].apply(lambda y: np.NaN if float(y)<=37.70788 or float(y)>=37.81998 else y)
+    df['X'] = df['X'].apply(lambda x: '' if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
+    df['Y'] = df['Y'].apply(lambda y: '' if float(y)<=37.70788 or float(y)>=37.81998 else y)
+    # war vorher np.NaN, jetzt ""
+
+    if (var == 'train.csv'):
+        df['Descript1'], df['Descript2'] = df['Descript'].str.split(',', 1).str
+        df['Descript2'] = df['Descript2'].apply(lambda y: '' if str(y) == "nan" else y)
+
+
 
     #print(df.dtypes)
     #print("nachher:")
@@ -49,9 +59,8 @@ def readF(var):
 
     if (var == 'test.csv'):
         df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'DayOfWeek', 'PdDistrict', 'Address', 'AddressSuffix', 'X', 'Y'])
-    else:
-        df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'Category', 'Descript', 'DayOfWeek', 'PdDistrict', 'Resolution', 'Address', 'AddressSuffix', 'X', 'Y'])
-
+    elif (var == 'train.csv'):
+        df=df.reindex(columns=['Date', 'Time', 'Year', 'Month', 'Day', 'Hour', 'Season', 'Category', 'Descript1', 'Descript2', 'DayOfWeek', 'PdDistrict', 'Resolution', 'Address', 'AddressSuffix', 'X', 'Y'])
 
     with pd.option_context('display.max_rows', 19, 'display.max_columns', 200):
         #print(output.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
@@ -92,7 +101,12 @@ def write_csv(df, name):
     if(os.path.isfile(path) == False):
         df.to_csv(path_or_buf = path ,sep=',', index=False)
     else:
-        print ('Writing didnt work, cuz File is already there, pls delete in before')
+        print ('Writing didnt work, because File is already there, pls delete it before')
+
+def readF2(path):
+    df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0)
+    with pd.option_context('display.max_rows', 19, 'display.max_columns', 200):
+        return df
 
 
 #Die Python-Datei muss im gleichen Ordner wie die CSV-Files sein.
@@ -100,3 +114,53 @@ df1 = readF('train.csv')
 write_csv(df1, 'trainrewritten')
 df2 = readF('test.csv')
 write_csv(df2, 'testrewritten')
+
+##df1 = readF2('trainrewritten.csv')
+##df2 = readF2('testrewritten.csv')
+
+##target_mapper = DataFrameMapper([
+##    ("Category", LabelEncoder()),
+##])
+
+##y = target_mapper.fit_transform(df1.copy())
+
+##print ("sample:", y[0])
+##print ("shape:", y.shape)
+
+
+##data_mapper = DataFrameMapper([
+##    ("Date", LabelEncoder()),
+##    ("Time", LabelEncoder()),
+##    ("Year", StandardScaler()),
+##    ("Month", StandardScaler()),
+##    ("Day", StandardScaler()),
+##    ("Hour", StandardScaler()),
+##    ("Season", LabelEncoder()),
+##    ("Descript1", LabelEncoder()),
+##    ("Descript2", LabelEncoder()),
+##    ("DayOfWeek", StandardScaler()),
+##    ("PdDistrict", LabelBinarizer()),
+##    ("Resolution", LabelEncoder()),
+##    ("Address", [LabelEncoder(), StandardScaler()]),
+##    ("AddressSuffix", LabelEncoder()),
+##    ("X", StandardScaler()),
+##    ("Y", StandardScaler()),
+##])
+
+#df1_new = np.array(df1).reshape(-1,1)
+#df2_new = np.array(df2).reshape(-1,1)
+
+## ab hier hagelts fehler
+##data_mapper.fit(pd.concat([df1.copy(), df2.copy()]))
+##X = data_mapper.fit_transform(df1.copy())
+##X_test = data_mapper.fit_transform(df2.copy())
+
+##print ("sample:", X[0])
+##print ("shape:", X.shape)
+
+##samples = np.random.permutation(np.arange(X.shape[0]))[:100000]
+##X_sample = X[samples]
+##y_sample = y[samples]
+
+##y_sample = np.reshape(y_sample, -1)
+##y = np.reshape(y, -1)
