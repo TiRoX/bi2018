@@ -67,15 +67,16 @@ class DataHandler:
     # Creates a <big_data> DataFrame containing both training and testing set to mutualize the feature preprocessing.
     # Returns a dictionary containing a well-splitted version of the data.
     def transform_data(self, with_mask=1):
-        features_columns = [ 'Year', 'Month', 'Day', 'Time', 'Season', 'DayOfWeek', 'PdDistrict',  'Address', 'AddressSuffix', 'X', 'Y']#['DayOfWeek', 'PdDistrict', 'X', 'Y', 'Year', 'Month', 'Day', 'Hour', 'Minute']
+        features_columns = [ 'Year', 'Month', 'Day', 'Time', 'Season', 'DayOfWeek', 'PdDistrict', 'X', 'Y']#['DayOfWeek', 'PdDistrict', 'X', 'Y', 'Year', 'Month', 'Day', 'Hour', 'Minute']
         big_data = self.training_data[features_columns].append(self.testing_data[features_columns])
 
-        categorical_features = [ 'Year', 'Month', 'Day','Time', 'Season', 'DayOfWeek', 'PdDistrict',  'Address', 'AddressSuffix'] #'Resolution', ['DayOfWeek', 'PdDistrict', 'Year', 'Month', 'Day', 'Hour', 'Minute']
+        categorical_features = ['Year', 'Month', 'Day','Time', 'Season', 'DayOfWeek', 'PdDistrict'] #'Resolution', ['DayOfWeek', 'PdDistrict', 'Year', 'Month', 'Day', 'Hour', 'Minute']
         numerical_features = ['X', 'Y']
-
+        
+        print ('Trying to transform data')
         big_data = self.categorical_encoder(big_data, categorical_features)
         big_data = self.features_preprocessing(big_data, numerical_features)
-
+        print ('Success')
         train_X = big_data[0:self.training_data.shape[0]]
         train_Y = self.training_data['Category'].map(self.category_mapping)
         test_X = big_data[self.training_data.shape[0]::]
@@ -84,7 +85,7 @@ class DataHandler:
             mask = np.random.rand(len(self.training_data)) < with_mask
             train_X = train_X[mask]
             train_Y = train_Y[mask]
-
+        print ('Wrapping up Data Transformation')
         return {'train_X': train_X, 'train_Y': train_Y, 'test_X': test_X}
 
     # Method to scale the numerical columns of a DataFrame.

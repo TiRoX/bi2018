@@ -10,6 +10,7 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 import lightgbm
+import os
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
@@ -20,9 +21,9 @@ from bi2018.BI.data_handler import DataHandler
 def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
-    df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
+    df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
     #df1 = MultiColumnLabelEncoder().fit_transform(df)
-    test = readF('testrewritten.csv', False)
+    test = readF('test.csv', False)
     #test1 = MultiColumnLabelEncoder().fit_transform(test)
     #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print (df1)
@@ -30,9 +31,15 @@ def main():
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     dh = DataHandler()
-    dh.load_data(train=df, test=test)
+    #xf= ~df.isin([np.nan, np.inf, -np.inf]).any(1)
 
+    
+    dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
+    with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
+        print(data_sets)
+        #exit()
+    
     resulttrain= lgbm(data_sets)
     print(resulttrain)
     exit()
@@ -44,14 +51,37 @@ def main():
 
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
 def readF(path, index): #index == True, wenn Index vorhanden
+    print('Reading: ', path)
     if (index == True):
-        #df = pd.read_csv(path, header = 0, sep='\t' )
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str, 'X': float, 'Y': float}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     else:
         #df = pd.read_csv(path, header = 0, sep='\t' )
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        #probably not needed anymore since bi_martin is fixed
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str, 'X': float, 'Y': float}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+    print('Transforming', path)
+    #df['Date'], df['Time'] = df['Dates'].str.split(' ', 1).str
+    df['Year'] = df['Dates'].str[:4]
+    df['Month'] = df['Dates'].str[5:7]
+    df['Day'] = df['Dates'].str[8:10]
+    df['Time'] = df['Dates'].str[11:16]
+    df['Season'] = df.apply(get_season, axis=1)
+    #Note the axis=1 specifier, that means that the application is done at a row, rather than a column level.
+    #df['AddressSuffix'] = df['Address'].str[-2:]
+    df['DayOfWeek'] = df['DayOfWeek'].str.upper()
+    #df['Address'] = df['Address'].str.upper()
+    df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
+    df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y)
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-
+        print (df)    
+        df = df.drop('Dates', 1)
+        df = df.drop('Address', 1)
+        if (path == 'train.csv'):
+            df = df.drop('Descript', 1)
+            df = df.drop('Resolution', 1)
+        print (df)
+    print('Success for ', path)
+    
+    #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         #print(df)
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
@@ -66,8 +96,17 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #existieren duplicates?
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
-        return df
+    return df
 
+def get_season(row):
+    if 3 <= int(row['Dates'][5:7]) <= 5:
+        return "SPRING"
+    elif 6 <= int(row['Dates'][5:7]) <= 8:
+        return "SUMMER"
+    elif 9 <= int(row['Dates'][5:7]) <= 11:
+        return "AUTUMN"
+    else: return "WINTER"
+    
 #Entnommen aus: https://stackoverflow.com/a/30267328
 class MultiColumnLabelEncoder:
     def __init__(self,columns = None):
@@ -92,8 +131,6 @@ class MultiColumnLabelEncoder:
         return output
 
     def fit_transform(self,X,y=None):
-        if self.columns == 'Date':
-            return self.fit(y,X).transform(X)
         return self.fit(X,y).transform(X)
 
 """
