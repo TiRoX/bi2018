@@ -31,12 +31,12 @@ def main():
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     dh = DataHandler()
     dh.load_data(train=df, test=test)
-    
+
     data_sets = dh.transform_data()
     resulttrain= lgbm(data_sets)
     print(resulttrain)
     exit()
-    
+
 
     #resulttrain = train(df1, test1)
     #print (resulttrain)
@@ -51,7 +51,7 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #df = pd.read_csv(path, header = 0, sep='\t' )
         df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        
+
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         #print(df)
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
