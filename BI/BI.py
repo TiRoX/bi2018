@@ -183,20 +183,20 @@ def lgbm(data_set):
     #x_train = df.drop(0, axis=1).values
 
     #http://lightgbm.readthedocs.io/en/latest/Python-Intro.html - how it should work
-    print ("data", np.random.rand(500,10))
-    print ("label", np.random.randint(2, size=500))
-    print('y')
-    print(y_train)
-    print('x')
-    print(x_train)
-    exit() #cuz it doesnt work yet
+    #print ("data", np.random.rand(500,10))
+    #print ("label", np.random.randint(2, size=500))
+    #print('y')
+    #print(y_train)
+    #print('x')
+    #print(x_train)
+    #exit() #cuz it doesnt work yet
     lgb_train = lightgbm.Dataset(x_train, y_train)
-    #lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
+    lgb_eval = lightgbm.Dataset(x_test, reference=lgb_train)
 
     #sc = StandardScaler()
     #ds = sc.fit_transform(X=df, y=None)
 
-    clf = lightgbm.train(params, lgb_train, 100)
+    clf = lightgbm.train(params, lgb_train, 100, valid_sets=lgb_eval)
     print(clf)
     exit()
     return clf
