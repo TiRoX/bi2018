@@ -12,8 +12,6 @@ import scipy.stats as stats
 import lightgbm
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-import matplotlib.pyplot as plt
-
 
 
 
@@ -28,12 +26,9 @@ def main():
     print (test)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
-
-    #resulttrain = train(df1, test1)
+    resulttrain = train(df1, test1)
     #print (resulttrain)
 
-    trainMartin(train, test)
-    #print(trainMartin(train, test))
 
 
 
@@ -154,7 +149,6 @@ def train(train, test):
     #params['num_leaves'] = 10
     #params['min_data'] = 50
     #params['max_depth'] = 10
-    params['num_class'] = 39
     """   'task': 'train',
     'boosting_type': 'gbdt',
     'objective': 'regression',
@@ -180,8 +174,7 @@ def train(train, test):
     print(y_train)
     print('x')
     print(x_train)
-    #exit() #cuz it doesnt work yet
-
+    exit() #cuz it doesnt work yet
     lgb_train = lightgbm.Dataset(x_train, y_train)
     #lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
 
@@ -189,61 +182,9 @@ def train(train, test):
     #ds = sc.fit_transform(X=df, y=None)
 
     clf = lightgbm.train(params, lgb_train, 100)
-
-    print("******************************")
-
-    y_pred=clf.predict(x)
-    print(y_pred)
-
-    #Confusion matrix
-    from sklearn.metrics import confusion_matrix
-    cm = confusion_matrix(y, y_pred)
-    print(cm)
-
     return clf
 
-def trainMartin(train, test):
-    x_train = train.iloc[:, [0,1,2,3,4,5,6,9,10,13,14,15 ]].values #date,time,year,month,day,hour,season,dayofweek,pddistrict,addresssuffix,X,Y
-    y_train = train.iloc[:, 7].values #category
 
-    x_test = test.iloc[:, [1,2,3,4,5,6]].values
-    y_test['Category'] = 0
-    y_test = test.iloc[7].values
-
-    from sklearn.preprocessing import StandardScaler
-    sc = StandardScaler()
-    x_train2 = sc.fit_transform(x_train2)
-    x_test = sc.transform(x_test)
-
-    d_train = lgb.Dataset(x_train2, label=y_train2)
-    params = {}
-    params['learning_rate'] = 0.003
-    params['boosting_type'] = 'gbdt'
-    params['objective'] = 'multiclass'
-    params['metric'] = 'logloss'
-    params['sub_feature'] = 0.5
-    params['num_leaves'] = 30
-    params['min_data'] = 50
-    params['max_depth'] = 10
-
-    clf = lgb.train(params, d_train, 100)
-
-    #Prediction
-    y_pred=clf.predict(x_test)
-    #convert into binary values
-    for i in range(0,99):
-        if y_pred[i]>=.5:       # setting threshold to .5
-           y_pred[i]=1
-        else:
-           y_pred[i]=0
-
-
-    #Confusion matrix
-    from sklearn.metrics import confusion_matrix
-    cm = confusion_matrix(y_test, y_pred)
-    #Accuracy
-    from sklearn.metrics import accuracy_score
-    accuracy=accuracy_score(y_pred,y_test)
 
 
 

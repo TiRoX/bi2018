@@ -1,3 +1,5 @@
 /.idea/
 *.csv
 BI/merke.py
+BI/__pycache__/__init__.cpython-36.pyc
+BI/__pycache__/data_handler.cpython-36.pyc
