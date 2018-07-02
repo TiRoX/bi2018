@@ -16,9 +16,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from data_handler import DataHandler
-=======
-from bi2018.BI.data_handler import DataHandler
->>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
+
 
 
 
@@ -33,12 +31,6 @@ def main():
     cT = ChiSquare(df) #
     useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     dh = DataHandler()
-<<<<<<< HEAD
-    #xf= ~df.isin([np.nan, np.inf, -np.inf]).any(1)
-
-
-=======
->>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
@@ -179,7 +171,7 @@ def lgbm(data_set):
     #params['categorical_feature'] = categorical_features
     #params['numerical_feature'] = ['X', 'Y']
     #params['sub_feature'] = 0.5
-    
+
     #OVER/UNDERFITTING
     #params['min_data'] = 50
     params['max_depth'] = 4 # < 0 means no limit; some have 4-6
@@ -188,29 +180,10 @@ def lgbm(data_set):
     #https://github.com/Microsoft/LightGBM/blob/master/docs/Parameters.rst
     #min_data_in_leaf, default = 20, type = int, aliases: min_data_per_leaf, min_data, min_child_samples, constraints: min_data_in_leaf >= 0
     #minimal number of data in one leaf. Can be used to deal with over-fitting
-<<<<<<< HEAD
 
-
-    #params['max_depth'] = 10
-    """   'task': 'train',
-    'boosting_type': 'gbdt',
-    'objective': 'regression',
-    'metric': {'l2', 'auc'},
-    'num_leaves': 31,
-    'learning_rate': 0.05,
-    'feature_fraction': 0.9,
-    'bagging_fraction': 0.8,
-    'bagging_freq': 5,
-    'verbose': 0"""
-
-    #print("*************************hallo")
-    #print(df[df.columns[1]])
-=======
-    
     #LAST RESULT: 1: 3.68873 num_leaves = 8
     #LAST RESULT: 1: valid_0's multi_logloss: 3.6638 num_leaves = 12; max_depth = 8
-    
->>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
+
     print ('Translating Datasets')
     x_train = data_set['train_X']
     y_train = data_set['train_Y']
@@ -224,20 +197,13 @@ def lgbm(data_set):
 
 
     print ('trying to perform')
-<<<<<<< HEAD
-    clf = lightgbm.train(params, lgb_train, 20, valid_sets=lgb_eval)
-    print("Success, result: ")
+    clf = lightgbm.train(params, lgb_train, 100, valid_sets=lgb_eval)
+    print("Success, result: ", clf) #hier müsste ein output aus, und zurück gegeben werden
     for keys,values in clf.best_score.items():
         print(keys)
         print(values)
 
-
     print("at iteration: ", clf.best_iteration)
-    exit()
-=======
-    clf = lightgbm.train(params, lgb_train, 100, valid_sets=lgb_eval)
-    print("Success, result: ", clf) #hier müsste ein output aus, und zurück gegeben werden
->>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
     return clf
 
 
