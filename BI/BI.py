@@ -143,7 +143,7 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
 
 #Feature Selection
 def useChi(cT):
-    testColumns = ["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]
+    testColumns = ['Year', 'Month', 'Day','Time', 'Season', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
@@ -163,7 +163,8 @@ def lgbm(data_set):
     
     #OVER/UNDERFITTING
     #params['min_data'] = 50
-    params['max_depth'] = 10 # < 0 means no limit; some have 4-6
+    params['max_depth'] = 4 # < 0 means no limit; some have 4-6
+    params['subsample'] = 0.9
     params['num_leaves'] = 12 #38*2
     #https://github.com/Microsoft/LightGBM/blob/master/docs/Parameters.rst
     #min_data_in_leaf, default = 20, type = int, aliases: min_data_per_leaf, min_data, min_child_samples, constraints: min_data_in_leaf >= 0
