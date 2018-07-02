@@ -191,7 +191,7 @@ def lgbm(data_set):
     params['learning_rate'] = 0.003
     params['boosting_type'] = 'goss'
     params['objective'] = 'multiclass'
-    params['num_class'] = '38'
+    params['num_class'] = '39'
     params['metric'] = 'multi_logloss'
     #params['sub_feature'] = 0.5
     #params['num_leaves'] = 10
