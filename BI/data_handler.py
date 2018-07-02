@@ -1,11 +1,10 @@
 '''
 Created on 01.07.2018
 
-@author: Kevin, Bereitstellung von Idraen: https://github.com/Idraen/kaggle_sf_crime/blob/master/scripts/data_handler.py#L97
+@author: Kevin, Bereitstellung von Idrae, mit Änderungen entnommen aus: https://github.com/Idraen/kaggle_sf_crime/blob/master/scripts/data_handler.py#L97
 '''
 
 # -*- coding: utf-8 -*-
-import pandas as pd 
 import numpy as np
 from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
@@ -93,7 +92,6 @@ class DataHandler:
         # The preprocessing package from sklearn does a good job.
         for num_col in numerical_columns:
             data[num_col] = preprocessing.scale(data[num_col])
-
         return data
 
     # Method to encode the categorical columns of a DataFrame.
@@ -102,25 +100,4 @@ class DataHandler:
         le = LabelEncoder()
         for cat_col in categorical_columns:
             data[cat_col] = le.fit_transform(data[cat_col])
-
         return data
-
-    def output(self, path_to_csv, predicted_probabilities):
-        # Opening the file to write
-        f = open(path_to_csv, 'w')
-        # Write header
-        f.write("Id,ARSON,ASSAULT,BAD CHECKS,BRIBERY,BURGLARY,DISORDERLY CONDUCT,DRIVING UNDER THE INFLUENCE,DRUG/NARCOTIC,DRUNKENNESS,EMBEZZLEMENT,EXTORTION,FAMILY OFFENSES,FORGERY/COUNTERFEITING,FRAUD,GAMBLING,KIDNAPPING,LARCENY/THEFT,LIQUOR LAWS,LOITERING,MISSING PERSON,NON-CRIMINAL,OTHER OFFENSES,PORNOGRAPHY/OBSCENE MAT,PROSTITUTION,RECOVERED VEHICLE,ROBBERY,RUNAWAY,SECONDARY CODES,SEX OFFENSES FORCIBLE,SEX OFFENSES NON FORCIBLE,STOLEN PROPERTY,SUICIDE,SUSPICIOUS OCC,TREA,TRESPASS,VANDALISM,VEHICLE THEFT,WARRANTS,WEAPON LAWS\n")
-        # For each line of <predicted_probabilities> write [index, predicted_probabilites[index,:]]
-        fmt = ['%i']
-        x=99
-        for i in range(39):
-            fmt.append('%.2f')
-            if x == i:
-                print ("nein")
-
-        for index in range(predicted_probabilities.shape[0]):
-            array_to_print = np.append([index], predicted_probabilities[index,:])
-            np.savetxt(f, array_to_print[np.newaxis], delimiter=',', fmt=fmt)
-
-        # Closing the file
-        f.close()
