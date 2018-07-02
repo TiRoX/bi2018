@@ -10,7 +10,6 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 import lightgbm
-<<<<<<< HEAD
 import os
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
