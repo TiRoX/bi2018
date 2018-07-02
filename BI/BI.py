@@ -10,11 +10,15 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 import lightgbm
+<<<<<<< HEAD
 import os
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from data_handler import DataHandler
+=======
+from bi2018.BI.data_handler import DataHandler
+>>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
 
 
 
@@ -22,18 +26,19 @@ def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
     df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
-    #df1 = MultiColumnLabelEncoder().fit_transform(df)
     test = readF('test.csv', False)
-    #test1 = MultiColumnLabelEncoder().fit_transform(test)
     #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print (df1)
         #print (test)
-    #cT = ChiSquare(df) #
-    #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
+    cT = ChiSquare(df) #
+    useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
     dh = DataHandler()
+<<<<<<< HEAD
     #xf= ~df.isin([np.nan, np.inf, -np.inf]).any(1)
 
 
+=======
+>>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
@@ -44,10 +49,6 @@ def main():
     resulttrain= lgbm(data_sets)
     print(resulttrain)
     exit()
-
-
-    #resulttrain = train(df1, test1)
-    #print (resulttrain)
 
 
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
@@ -161,27 +162,33 @@ class ChiSquare: #Erstellen von chisquare-Klasse um Werte zu speichern
 
 #Feature Selection
 def useChi(cT):
-    testColumns = ["Date", "Time", "Year", "Month", "Day", "Hour", "Season","Descript","DayOfWeek","PdDistrict", "Resolution", "Address", "AddressSuffix", "X", "Y"]
+    testColumns = ['Year', 'Month', 'Day','Time', 'Season', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 def lgbm(data_set):
+    #categorical_features = ['Year', 'Month', 'Day','Time', 'Season', 'DayOfWeek', 'PdDistrict'] funtzt net so
     params = {}
     params['task'] = 'train'
-    params['learning_rate'] = 0.001
+    params['learning_rate'] = 0.0005
+    #params['num_boost_round'] = 'best_iteration'
     params['boosting_type'] = 'goss'
     params['objective'] = 'multiclass'
     params['num_class'] = '39'
     params['metric'] = 'multi_logloss'
+    #params['categorical_feature'] = categorical_features
+    #params['numerical_feature'] = ['X', 'Y']
     #params['sub_feature'] = 0.5
-    #params['num_leaves'] = 10
+    
     #OVER/UNDERFITTING
     #params['min_data'] = 50
-    params['max_depth'] = 8 # < 0 means no limit; some have 4-6
-    params['num_leaves'] = 8 #38*2
+    params['max_depth'] = 4 # < 0 means no limit; some have 4-6
+    params['subsample'] = 0.9
+    params['num_leaves'] = 12 #38*2
     #https://github.com/Microsoft/LightGBM/blob/master/docs/Parameters.rst
     #min_data_in_leaf, default = 20, type = int, aliases: min_data_per_leaf, min_data, min_child_samples, constraints: min_data_in_leaf >= 0
     #minimal number of data in one leaf. Can be used to deal with over-fitting
+<<<<<<< HEAD
 
 
     #params['max_depth'] = 10
@@ -198,31 +205,26 @@ def lgbm(data_set):
 
     #print("*************************hallo")
     #print(df[df.columns[1]])
+=======
+    
+    #LAST RESULT: 1: 3.68873 num_leaves = 8
+    #LAST RESULT: 1: valid_0's multi_logloss: 3.6638 num_leaves = 12; max_depth = 8
+    
+>>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
     print ('Translating Datasets')
     x_train = data_set['train_X']
     y_train = data_set['train_Y']
     x_test = data_set['test_X']
-    #y_train = train.iloc[0].values
-    #x_train = train.drop(0).values
-    #print(x_train)
-    #x_train = df.drop(0, axis=1).values
+
 
     #http://lightgbm.readthedocs.io/en/latest/Python-Intro.html - how it should work
-    #print ("data", np.random.rand(500,10))
-    #print ("label", np.random.randint(2, size=500))
-    #print('y')
-    #print(y_train)
-    #print('x')
-    #print(x_train)
-    #exit() #cuz it doesnt work yet
     print ('setup training and eval')
     lgb_train = lightgbm.Dataset(x_train, y_train)
     lgb_eval = lightgbm.Dataset(x_test, reference=lgb_train)
 
 
-    #sc = StandardScaler()
-    #ds = sc.fit_transform(X=df, y=None)
     print ('trying to perform')
+<<<<<<< HEAD
     clf = lightgbm.train(params, lgb_train, 20, valid_sets=lgb_eval)
     print("Success, result: ")
     for keys,values in clf.best_score.items():
@@ -232,6 +234,10 @@ def lgbm(data_set):
 
     print("at iteration: ", clf.best_iteration)
     exit()
+=======
+    clf = lightgbm.train(params, lgb_train, 100, valid_sets=lgb_eval)
+    print("Success, result: ", clf) #hier müsste ein output aus, und zurück gegeben werden
+>>>>>>> 2525d7d70d0da2f72702df0e3746db2f37f137d3
     return clf
 
 
