@@ -191,7 +191,7 @@ def lgbm(data_set):
     params['learning_rate'] = 0.003
     params['boosting_type'] = 'goss'
     params['objective'] = 'multiclass'
-    params['numclass'] = '38'
+    params['num_class'] = '38'
     params['metric'] = 'multi_logloss'
     #params['sub_feature'] = 0.5
     #params['num_leaves'] = 10
@@ -210,7 +210,7 @@ def lgbm(data_set):
 
     #print("*************************hallo")
     #print(df[df.columns[1]])
-
+    print ('Translating Datasets')
     x_train = data_set['train_X']
     y_train = data_set['train_Y']
     x_test = data_set['test_X']
@@ -227,14 +227,16 @@ def lgbm(data_set):
     #print('x')
     #print(x_train)
     #exit() #cuz it doesnt work yet
+    print ('setup training and eval')
     lgb_train = lightgbm.Dataset(x_train, y_train)
     lgb_eval = lightgbm.Dataset(x_test, reference=lgb_train)
+    
 
     #sc = StandardScaler()
     #ds = sc.fit_transform(X=df, y=None)
-
+    print ('trying to perform')
     clf = lightgbm.train(params, lgb_train, 100, valid_sets=lgb_eval)
-    print(clf)
+    print("Success, result: ", clf)
     exit()
     return clf
 
