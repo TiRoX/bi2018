@@ -53,6 +53,7 @@ class DataHandler:
     "VEHICLE THEFT": 36,
     "WARRANTS": 37,
     "WEAPON LAWS": 38}
+    
 
     def __init__(self):
         self.training_data = None
@@ -99,5 +100,14 @@ class DataHandler:
         # The LabelEncoder class from sklearn.preprocessing does a good job.
         le = LabelEncoder()
         for cat_col in categorical_columns:
+            if cat_col == "DayOfWeek":
+                dayofweek_mapping = {"MONDAY": 0, 
+                                     "TUESDAY": 1,
+                                     "WEDNESDAY": 2,
+                                     "THURSDAY": 3,
+                                     "FRIDAY": 4,
+                                     "SATURDAY": 5,
+                                     "SUNDAY": 6}
+                data[cat_col] = le.fit_transform(data[cat_col], y=dayofweek_mapping)
             data[cat_col] = le.fit_transform(data[cat_col])
         return data

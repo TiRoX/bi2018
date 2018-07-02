@@ -170,7 +170,15 @@ def lgbm(data_set):
     params['metric'] = 'multi_logloss'
     #params['sub_feature'] = 0.5
     #params['num_leaves'] = 10
+    #OVER/UNDERFITTING
     params['min_data'] = 5000
+    params['max_depth'] = 8 # < 0 means no limit; some have 4-6
+    
+    #https://github.com/Microsoft/LightGBM/blob/master/docs/Parameters.rst
+    #min_data_in_leaf, default = 20, type = int, aliases: min_data_per_leaf, min_data, min_child_samples, constraints: min_data_in_leaf >= 0
+    #minimal number of data in one leaf. Can be used to deal with over-fitting
+    
+    
     #params['max_depth'] = 10
     """   'task': 'train',
     'boosting_type': 'gbdt',
