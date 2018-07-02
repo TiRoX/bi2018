@@ -53,7 +53,7 @@ class DataHandler:
     "VEHICLE THEFT": 36,
     "WARRANTS": 37,
     "WEAPON LAWS": 38}
-    dayofweek_mapping = {"MONDAY": 0, 
+    dayofweek_mapping = {"MONDAY": 0,
                          "TUESDAY": 1,
                          "WEDNESDAY": 2,
                          "THURSDAY": 3,
@@ -73,12 +73,12 @@ class DataHandler:
     # Creates a <big_data> DataFrame containing both training and testing set to mutualize the feature preprocessing.
     # Returns a dictionary containing a well-splitted version of the data.
     def transform_data(self, with_mask=1):
-        features_columns = [ 'Year', 'Month', 'Day', 'Time', 'Season', 'DayOfWeek', 'PdDistrict', 'X', 'Y']#['DayOfWeek', 'PdDistrict', 'X', 'Y', 'Year', 'Month', 'Day', 'Hour', 'Minute']
+        features_columns = [ 'Year', 'Month', 'Day', 'Hour', 'Minute', 'Season', 'DayOfWeek', 'PdDistrict', 'X', 'Y']#['DayOfWeek', 'PdDistrict', 'X', 'Y', 'Year', 'Month', 'Day', 'Hour', 'Minute']
         big_data = self.training_data[features_columns].append(self.testing_data[features_columns])
 
-        categorical_features = ['Year', 'Month', 'Day','Time', 'Season', 'DayOfWeek', 'PdDistrict'] #'Resolution', ['DayOfWeek', 'PdDistrict', 'Year', 'Month', 'Day', 'Hour', 'Minute']
+        categorical_features = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'Season', 'DayOfWeek', 'PdDistrict'] #'Resolution', ['DayOfWeek', 'PdDistrict', 'Year', 'Month', 'Day', 'Hour', 'Minute']
         numerical_features = ['X', 'Y']
-        
+
         print ('Trying to transform data')
         big_data = self.categorical_encoder(big_data, categorical_features)
         big_data = self.features_preprocessing(big_data, numerical_features)

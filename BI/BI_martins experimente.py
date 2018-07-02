@@ -10,83 +10,58 @@ Created on 18.06.2018
 import pandas as pd
 import scipy.stats as stats
 import lightgbm
-import os
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+<<<<<<< HEAD
+import matplotlib.pyplot as plt
+
+=======
 from sklearn import preprocessing
-from data_handler import DataHandler
+from bi2018.BI.data_handler import DataHandler
+>>>>>>> 66c65dcd31014f9075da805d80f8b9acadc76802
 
 
 
 def main():
     #Hier werden alle verschiedenen Methoden aufgerufen, da es sonst wirklich ziemlich unübersichtlich wird
     #Einlesen des Files
-    df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
+    df = readF("trainrewritten.csv", True) # True wenn Index im File vorhanden, wie hier.
     #df1 = MultiColumnLabelEncoder().fit_transform(df)
-    test = readF('test.csv', False)
+    test = readF('testrewritten.csv', False)
     #test1 = MultiColumnLabelEncoder().fit_transform(test)
     #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         #print (df1)
         #print (test)
     #cT = ChiSquare(df) #
     #useChi(cT) #gibt aus, welche Columns "important" sind für "Category"; DESCRIPT is most important
+<<<<<<< HEAD
+=======
     dh = DataHandler()
-    #xf= ~df.isin([np.nan, np.inf, -np.inf]).any(1)
-
-
     dh.load_data(train=df, test=test)
+    
     data_sets = dh.transform_data()
-    with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        print("datasets:")
-        print(data_sets)
-        #exit()
-
     resulttrain= lgbm(data_sets)
     print(resulttrain)
     exit()
-
+    
+>>>>>>> 66c65dcd31014f9075da805d80f8b9acadc76802
 
     #resulttrain = train(df1, test1)
     #print (resulttrain)
 
+    trainMartin(train, test)
+    #print(trainMartin(train, test))
 
 #Data Understanding & Data Preparation von BI_martin.py, dort wird von train.csv die csv "rewritten.csv" erstellt, und hier wieder eingelesen zur Auswertung.
 def readF(path, index): #index == True, wenn Index vorhanden
-    print('Reading: ', path)
     if (index == True):
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str, 'X': float, 'Y': float}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        #df = pd.read_csv(path, header = 0, sep='\t' )
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     else:
         #df = pd.read_csv(path, header = 0, sep='\t' )
-        #probably not needed anymore since bi_martin is fixed
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str, 'X': float, 'Y': float}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
-    print('Transforming', path)
-    #df['Date'], df['Time'] = df['Dates'].str.split(' ', 1).str
-    df['Year'] = df['Dates'].str[:4]
-    df['Month'] = df['Dates'].str[5:7]
-    df['Day'] = df['Dates'].str[8:10]
-    #df['Time'] = df['Dates'].str[11:16] # in stunde und minute aufgesplittet
-    df['Hour'] = df['Dates'].str[11:13]
-    df['Minute'] = df['Dates'].str[14:16]
-    df['Season'] = df.apply(get_season, axis=1)
-    #Note the axis=1 specifier, that means that the application is done at a row, rather than a column level.
-    #df['AddressSuffix'] = df['Address'].str[-2:]
-    df['DayOfWeek'] = df['DayOfWeek'].str.upper()
-    #df['Address'] = df['Address'].str.upper()
-    df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
-    df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y)
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        print (df)
-        df = df.drop('Dates', 1)
-        df = df.drop('Address', 1)
-        if (path == 'train.csv'):
-            df = df.drop('Descript', 1)
-            df = df.drop('Resolution', 1)
-
-
-        print (df)
-    print('Success for ', path)
-
-    #with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
+        
         #print(df.ix[257059]) # --> Einige Zeilen sind abgeschnitten und ergeben nicht immer viel Sinn. So wie diese hier; Excel index + 2 = Python,,, index 257061 = 257059
         #print(df)
         # Abfrage für bestimmten Wert "NONE" in Spalte "Resolution"
@@ -101,17 +76,35 @@ def readF(path, index): #index == True, wenn Index vorhanden
         #existieren duplicates?
         #print (output.duplicated(subset='Dates', keep=False)) #Keep=False markiert alle Duplikate als True, keep=first, nur den ersten nicht
         #Gebe den Dataframe zurück, da wir nun alle Daten in der CSV wie gewünscht bearbeitet haben
-    return df
+        return df
 
-def get_season(row):
-    if 3 <= int(row['Dates'][5:7]) <= 5:
-        return "SPRING"
-    elif 6 <= int(row['Dates'][5:7]) <= 8:
-        return "SUMMER"
-    elif 9 <= int(row['Dates'][5:7]) <= 11:
-        return "AUTUMN"
-    else: return "WINTER"
+#Entnommen aus: https://stackoverflow.com/a/30267328
+class MultiColumnLabelEncoder:
+    def __init__(self,columns = None):
+        self.columns = columns # array of column names to encode
 
+    def fit(self,X,y=None):
+        return self # not relevant here
+
+    def transform(self,X):
+        '''
+        Transforms columns of X specified in self.columns using
+        LabelEncoder(). If no columns specified, transforms all
+        columns in X.
+        '''
+        output = X.copy()
+        if self.columns is not None:
+            for col in self.columns:
+                output[col] = LabelEncoder().fit_transform(output[col])
+        else:
+            for colname,col in output.iteritems():
+                output[colname] = LabelEncoder().fit_transform(col)
+        return output
+
+    def fit_transform(self,X,y=None):
+        if self.columns == 'Date':
+            return self.fit(y,X).transform(X)
+        return self.fit(X,y).transform(X)
 
 """
 Feature Extraction
@@ -168,23 +161,16 @@ def useChi(cT):
 def lgbm(data_set):
     params = {}
     params['task'] = 'train'
-    params['learning_rate'] = 0.001
+    params['learning_rate'] = 0.003
     params['boosting_type'] = 'goss'
     params['objective'] = 'multiclass'
-    params['num_class'] = '39'
+    params['numclass'] = '38'
     params['metric'] = 'multi_logloss'
     #params['sub_feature'] = 0.5
     #params['num_leaves'] = 10
-    #OVER/UNDERFITTING
-    #params['min_data'] = 50
-    params['max_depth'] = 8 # < 0 means no limit; some have 4-6
-    params['num_leaves'] = 8 #38*2
-    #https://github.com/Microsoft/LightGBM/blob/master/docs/Parameters.rst
-    #min_data_in_leaf, default = 20, type = int, aliases: min_data_per_leaf, min_data, min_child_samples, constraints: min_data_in_leaf >= 0
-    #minimal number of data in one leaf. Can be used to deal with over-fitting
-
-
+    params['min_data'] = 5000
     #params['max_depth'] = 10
+    params['num_class'] = 39
     """   'task': 'train',
     'boosting_type': 'gbdt',
     'objective': 'regression',
@@ -198,7 +184,7 @@ def lgbm(data_set):
 
     #print("*************************hallo")
     #print(df[df.columns[1]])
-    print ('Translating Datasets')
+
     x_train = data_set['train_X']
     y_train = data_set['train_Y']
     x_test = data_set['test_X']
@@ -208,33 +194,81 @@ def lgbm(data_set):
     #x_train = df.drop(0, axis=1).values
 
     #http://lightgbm.readthedocs.io/en/latest/Python-Intro.html - how it should work
-    #print ("data", np.random.rand(500,10))
-    #print ("label", np.random.randint(2, size=500))
-    #print('y')
-    #print(y_train)
-    #print('x')
-    #print(x_train)
+    print ("data", np.random.rand(500,10))
+    print ("label", np.random.randint(2, size=500))
+    print('y')
+    print(y_train)
+    print('x')
+    print(x_train)
     #exit() #cuz it doesnt work yet
-    print ('setup training and eval')
-    lgb_train = lightgbm.Dataset(x_train, y_train)
-    lgb_eval = lightgbm.Dataset(x_test, reference=lgb_train)
 
+    lgb_train = lightgbm.Dataset(x_train, y_train)
+    #lgb_eval = lgb.Dataset(x_test, y_test, reference=lgb_train)
 
     #sc = StandardScaler()
     #ds = sc.fit_transform(X=df, y=None)
-    print ('trying to perform')
-    clf = lightgbm.train(params, lgb_train, 20, valid_sets=lgb_eval)
-    print("Success, result: ")
-    for keys,values in clf.best_score.items():
-        print(keys)
-        print(values)
 
+    clf = lightgbm.train(params, lgb_train, 100)
+<<<<<<< HEAD
 
-    print("at iteration: ", clf.best_iteration)
+    print("******************************")
+
+    y_pred=clf.predict(x)
+    print(y_pred)
+
+    #Confusion matrix
+    from sklearn.metrics import confusion_matrix
+    cm = confusion_matrix(y, y_pred)
+    print(cm)
+
+=======
+    print(clf)
     exit()
+>>>>>>> 66c65dcd31014f9075da805d80f8b9acadc76802
     return clf
 
+def trainMartin(train, test):
+    x_train = train.iloc[:, [0,1,2,3,4,5,6,9,10,13,14,15 ]].values #date,time,year,month,day,hour,season,dayofweek,pddistrict,addresssuffix,X,Y
+    y_train = train.iloc[:, 7].values #category
 
+    x_test = test.iloc[:, [1,2,3,4,5,6]].values
+    y_test['Category'] = 0
+    y_test = test.iloc[7].values
+
+    from sklearn.preprocessing import StandardScaler
+    sc = StandardScaler()
+    x_train2 = sc.fit_transform(x_train2)
+    x_test = sc.transform(x_test)
+
+    d_train = lgb.Dataset(x_train2, label=y_train2)
+    params = {}
+    params['learning_rate'] = 0.003
+    params['boosting_type'] = 'gbdt'
+    params['objective'] = 'multiclass'
+    params['metric'] = 'logloss'
+    params['sub_feature'] = 0.5
+    params['num_leaves'] = 30
+    params['min_data'] = 50
+    params['max_depth'] = 10
+
+    clf = lgb.train(params, d_train, 100)
+
+    #Prediction
+    y_pred=clf.predict(x_test)
+    #convert into binary values
+    for i in range(0,99):
+        if y_pred[i]>=.5:       # setting threshold to .5
+           y_pred[i]=1
+        else:
+           y_pred[i]=0
+
+
+    #Confusion matrix
+    from sklearn.metrics import confusion_matrix
+    cm = confusion_matrix(y_test, y_pred)
+    #Accuracy
+    from sklearn.metrics import accuracy_score
+    accuracy=accuracy_score(y_pred,y_test)
 
 
 
