@@ -74,10 +74,10 @@ class DataHandler:
     #  <big_data> DataFrame erstellen um  feature preprocessing zu vereinfachen
     #  Ausgabe ist ein Dictionary wo train-Datensatz aufgeteilt wird.
     def transform_data(self, with_mask=1):
-        features_columns = [ 'Year', 'Month', 'Time', 'PdDistrict', 'X', 'Y']  #[ 'Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
+        features_columns = [ 'Year', 'Month', 'Hour', 'PdDistrict', 'X', 'Y']  #[ 'Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
         big_data = self.training_data[features_columns].append(self.testing_data[features_columns])
 
-        categorical_features = ['Year', 'Month', 'Time', 'PdDistrict']
+        categorical_features = ['Year', 'Month', 'Hour', 'PdDistrict']
         numerical_features = ['X', 'Y']
         
             
@@ -138,7 +138,7 @@ def readF(path, index):
     df['Year'] = df['Dates'].str[:4]
     df['Month'] = df['Dates'].str[5:7]
     df['Day'] = df['Dates'].str[8:10]
-    df['Time'] = df['Dates'].str[11:13]
+    df['Hour'] = df['Dates'].str[11:13]
     df['Season'] = df.apply(get_season, axis=1)
     
     df['DayOfWeek'] = df['DayOfWeek'].str.upper()
@@ -206,12 +206,12 @@ class ChiSquare:
 
 #Feature Selection
 def useChi(cT):
-    testColumns = ['Year', 'Month', 'Time', 'PdDistrict', 'X', 'Y'] #['Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
+    testColumns = ['Year', 'Month', 'Hour', 'PdDistrict', 'X', 'Y'] #['Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
         cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
 
 def lgbm(data_set):
-    
+    # Quelle -> https://github.com/Microsoft/LightGBM/blob/master/tests/python_package_test/test_sklearn.py
     print ('Aufteilen des Datensatzes nach Feature Preprocessing')
     x_train_split_t = data_set['x_train_split']
     y_train_split_t = data_set['y_train_split']
@@ -224,7 +224,7 @@ def lgbm(data_set):
     lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)
 
     print ('trying to perform GBDT')
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=1000, subsample_for_bin=200000, objective='multiclass', silent=False )
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=127, subsample_for_bin=200000, objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         y_pred = clf.predict(test_x)
