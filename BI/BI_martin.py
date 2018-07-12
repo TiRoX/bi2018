@@ -42,13 +42,16 @@ def readF(var):
 
     #X: longitude of the incident location. San Francisco city longitude ranges from -122.5136 to -122.3649. float conversion used to ensure correct comparism
     #Y: latitude of the incident location. San Francisco city latitude ranges from 37.70788 to 37.81998. float conversion used to ensure correct comparism
-    df['X'] = df['X'].apply(lambda x: '0' if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
-    df['Y'] = df['Y'].apply(lambda y: '0' if float(y)<=37.70788 or float(y)>=37.81998 else y)
+    #df['X'] = df['X'].apply(lambda x: 0 if float(x)>-122.3649 or float(x)<-122.5136 else x)#
+    df['X'] = df['X'].apply(lambda x: 0 if float(x)>-122.3649 or float(x)<-122.513642064265 else x)
+    df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<37.70788 or float(y)>37.81998 else y)
     # war vorher np.NaN, jetzt "0"
 
     #alle datensätze mit ungültigen koords löschen
-    df[df.X != '0']
-    df[df.Y != '0']
+    df = df[df.X != 0]
+    df = df[df.Y != 0]
+
+
 
     #if (var == 'train.csv'):
     #    df['Descript1'], df['Descript2'] = df['Descript'].str.split(',', 1).str

@@ -142,11 +142,13 @@ def readF(path, index):
     df['Season'] = df.apply(get_season, axis=1)
 
     df['DayOfWeek'] = df['DayOfWeek'].str.upper()
-    df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
-    df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y) #verzieht die Auswertung über Chi-Square
+    #df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)#
+    df['X'] = df['X'].apply(lambda x: 0 if float(x)>-122.3649 or float(x)<-122.513642064265 else x)
+    df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<37.70788 or float(y)>37.81998 else y) #verzieht die Auswertung über Chi-Square
     #alle datensätze mit ungültigen koords löschen
-    df[df.X != '0']
-    df[df.Y != '0']
+    df = df[df.X != 0]
+    df = df[df.Y != 0]
+
 
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
         df = df.drop('Dates', 1)
