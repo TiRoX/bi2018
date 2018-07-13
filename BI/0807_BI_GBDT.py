@@ -16,8 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from _ast import Try
-os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
+#os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
 
 '''
 Hi, My name is Kevin. If ure reading this, youre probably reading it on your screen~
@@ -247,17 +246,25 @@ def lgbm(data_set):
     clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1, n_estimators=127, subsample_for_bin=200000, objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        y_pred = clf.predict(test_x)
-    print(y_pred)
-    pred_string=np.array_str(y_pred)
-    print (pred_string)
+        clf.predict(test_x)
+
+    #print(y_pred)
+    #pred_string=np.array_str(y_pred)
+    #print (pred_string)
     #with open('pred_file.txt','w') as f:
     #    f.write(pred_string)
         
-    print ('trying to graphviz here?')
-    ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
-    plt.show(ax)
+    print ('trying to plot here?')
 
+    #fuck graphviz
+    #ax = lightgbm.plot_tree(clf, tree_index=83, show_info=['split_gain'])    
+    #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(500, 80), show_info=['split_gain'])
+    # plt.show(ax)
+
+    print('Plot 84th tree with graphviz...')
+    graph = lightgbm.create_tree_digraph(clf, tree_index=83, name='Tree84')
+    graph.render(view=True)
+    plt.show(graph)
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40207 ohne Day und DayOfWeek - Iteration 127 - Danach Anstieg - [StandardConfig]
