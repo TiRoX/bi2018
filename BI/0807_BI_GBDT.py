@@ -15,6 +15,21 @@ from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from _ast import Try
+os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
+
+'''
+Hi, My name is Kevin. If ure reading this, youre probably reading it on your screen~
+garphviz: 
+
+
+https://stackoverflow.com/questions/35064304/runtimeerror-make-sure-the-graphviz-executables-are-on-your-systems-path-aft
+https://graphviz.gitlab.io/_pages/Download/Download_windows.html
+windowstaste --> systemumgebungsvariablen bearbeiten
+https://imgur.com/a/tZHiAlb
+
+'''
 
 
 class DataHandler:
@@ -235,10 +250,13 @@ def lgbm(data_set):
         y_pred = clf.predict(test_x)
     print(y_pred)
     pred_string=np.array_str(y_pred)
-    with open('pred_file.txt','w') as f:
-        f.write(pred_string)
-
-
+    print (pred_string)
+    #with open('pred_file.txt','w') as f:
+    #    f.write(pred_string)
+        
+    print ('trying to graphviz here?')
+    ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
+    plt.show(ax)
 
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]

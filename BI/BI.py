@@ -14,7 +14,7 @@ import os
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
-from data_handler import DataHandler
+from  bi2018.BI.data_handler import DataHandler
 
 
 
