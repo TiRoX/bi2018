@@ -267,7 +267,7 @@ def lgbm(data_set):
     plt.show(graph1)
     
     print('Plotte finalen Baum (1.)')
-    graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Finale Baum')
+    graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Erster Baum')
     graph2.render(view=True)
     plt.show(graph2)
     
