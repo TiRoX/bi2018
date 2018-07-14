@@ -15,6 +15,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from sklearn.utils import class_weight
 #from graphviz import digraph
 
 
@@ -75,10 +76,10 @@ class DataHandler:
     #  <big_data> DataFrame erstellen um  feature preprocessing zu vereinfachen
     #  Ausgabe ist ein Dictionary wo train-Datensatz aufgeteilt wird.
     def transform_data(self, with_mask=1):
-        features_columns = [ 'Year', 'Month', 'Hour', 'PdDistrict', 'X', 'Y']  #[ 'Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
+        features_columns = [ 'Year', 'Month', 'Hour','Address', 'AddressSuffix', 'PdDistrict', 'X', 'Y']  #[ 'Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
         big_data = self.training_data[features_columns].append(self.testing_data[features_columns])
 
-        categorical_features = ['Year', 'Month', 'Hour', 'PdDistrict']
+        categorical_features = ['Year', 'Month', 'Hour','Address', 'AddressSuffix', 'PdDistrict']
         numerical_features = ['X', 'Y']
         
             
@@ -116,6 +117,7 @@ def main():
  
     df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
     test = readF('test.csv', False)
+    useChi(df)
     dh = DataHandler()
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
@@ -132,16 +134,17 @@ def main():
 def readF(path, index):
     print('Reading: ', path)
     if (index == True):
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str, 'X': float, 'Y': float}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"Address": str, "AddressSuffix": str, 'X': float, 'Y': float}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     else:
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"AddressSuffix": str, 'X': float, 'Y': float}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"Address": str, "AddressSuffix": str, 'X': float, 'Y': float}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
     print('Transforming', path)
     df['Year'] = df['Dates'].str[:4]
     df['Month'] = df['Dates'].str[5:7]
     df['Day'] = df['Dates'].str[8:10]
     df['Hour'] = df['Dates'].str[11:13]
     df['Season'] = df.apply(get_season, axis=1)
-    
+    df['AddressSuffix'] = df['Address'].str[-2:]
+    df['Address'] = df['Address'].str.upper()
     df['DayOfWeek'] = df['DayOfWeek'].str.upper()
     df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
     df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y) 
@@ -151,12 +154,12 @@ def readF(path, index):
       
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):   
         df = df.drop('Dates', 1)
-        df = df.drop('Address', 1)
+        #df = df.drop('Address', 1)
         if (path == 'train.csv'):
             df = df.drop('Descript', 1)
             df = df.drop('Resolution', 1)
     print('Success for ', path)
-    
+    #print(df)
     return df
 
 def get_season(row):
@@ -209,10 +212,10 @@ class ChiSquare:
         self._print_chisquare_result(colX, alpha)
 
 #Feature Selection
-def useChi(cT):
-    testColumns = ['Year', 'Month', 'Hour', 'PdDistrict', 'X', 'Y'] #['Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
+def useChi(df):
+    testColumns = ['Year', 'Month', 'Hour', 'Address', 'AddressSuffix', 'PdDistrict', 'X', 'Y'] #['Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
     for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
-        cT.TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Resolution als abhängiges Features
+        ChiSquare(df).TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Category als abhängiges Features
 
 def lgbm(data_set):
     # Quelle -> https://github.com/Microsoft/LightGBM/blob/master/tests/python_package_test/test_sklearn.py
@@ -226,9 +229,17 @@ def lgbm(data_set):
     print ('setup training and eval')
     lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
     lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)
-
-    print ('trying to perform GBDT')
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1521, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000, objective='multiclass', silent=False )
+    print(np.unique(y_train_split_t))
+    
+    
+    
+    #class_weights bringt keine Verbesserung
+    #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train_split_t), y_train_split_t)
+    #class_weights_mapping = {}
+    #for i in range(39):
+        #class_weights_mapping[i]= class_weights[i]
+    
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
     y_pred = clf.predict(test_x)
     print(y_pred)
@@ -244,8 +255,9 @@ def lgbm(data_set):
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40207 ohne Day und DayOfWeek - Iteration 127 - Danach Anstieg - [StandardConfig]
 #Multi_LogLoss bei 2.37697 ohne Day und DayOfWeek - Iteration 100
-#Multi_LogLoss bei 2.35076 ohne Day und DayOfWeek - Iteration 72 - Danach Anstieg - [StandardConfig] + num_leaves = 1000
 #Multi_LogLoss bei 2.35994 ohne Day und DayOfWeek - Iteration 63 - Danach Anstieg - [StandardConfig] + num_leaves = 1521
+#Multi_LogLoss bei 2.35076 ohne Day und DayOfWeek - Iteration 72 - Danach Anstieg - [StandardConfig] + num_leaves = 1000
+#Multi_LogLoss bei 2.31725 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves = 1000
 
 #Aufrufen der Ausführung, bitte ganz unten
 main()
