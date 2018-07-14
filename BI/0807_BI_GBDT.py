@@ -261,17 +261,25 @@ def lgbm(data_set):
     #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(500, 80), show_info=['split_gain'])
     # plt.show(ax)
 
-    print('Plot 84th tree with graphviz...')
-    graph = lightgbm.create_tree_digraph(clf, tree_index=83, name='Tree84')
-    graph.render(view=True)
-    plt.show(graph)
+    print('Plotte die Features')
+    graph1 = lightgbm.plot_importance(gbm, max_num_features=10)
+    graph1.render(view=True)
+    plt.show(graph1)
     
-    print('Plot feature importances...')
-    ax = lightgbm.plot_importance(clf, max_num_features=10, name='plotimportance')
-    plt.show(ax)
+    print('Plotte finalen Baum (1.)')
+    graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Finale Baum')
+    graph2.render(view=True)
+    plt.show(graph2)
+    
+    print('Plotte finalen Baum (72.)')
+    graph3 = lightgbm.create_tree_digraph(clf, tree_index=71, name='Finale Baum')
+    graph3.render(view=True)
+    plt.show(graph3)
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40207 ohne Day und DayOfWeek - Iteration 127 - Danach Anstieg - [StandardConfig]
+#Multi_LogLoss bei 2.35994 ohne Day und DayOfWeek - Iteration 63 - Danach Anstieg - [StandardConfig] + num_leaves = 1521
+#Multi_LogLoss bei 2.35076 ohne Day und DayOfWeek - Iteration 72 - Danach Anstieg - [StandardConfig] + num_leaves = 1000
 
 #Aufrufen der Ausführung, bitte ganz unten
 main()
