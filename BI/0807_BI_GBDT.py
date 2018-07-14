@@ -265,6 +265,10 @@ def lgbm(data_set):
     graph = lightgbm.create_tree_digraph(clf, tree_index=83, name='Tree84')
     graph.render(view=True)
     plt.show(graph)
+    
+    print('Plot feature importances...')
+    ax = lightgbm.plot_importance(clf, max_num_features=10, name='plotimportance')
+    plt.show(ax)
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40207 ohne Day und DayOfWeek - Iteration 127 - Danach Anstieg - [StandardConfig]
