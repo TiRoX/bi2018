@@ -16,7 +16,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight
-#from graphviz import digraph
+os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
 
 
 class DataHandler:
@@ -233,11 +233,27 @@ def lgbm(data_set):
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
 
     y_pred = clf.predict(test_x)
-    print(y_pred)
+
+
+    print('Plotte die Features')
+    graph1 = lightgbm.plot_importance(clf, max_num_features=10, name ='importance')
+    graph1.render(view=True)
+    plt.show()
+    
+    print('Plotte finalen Baum (1.)')
+    graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Erster Baum')
+    graph2.render(view=True)
+    plt.show(graph2)
+    
+    print('Plotte finalen Baum (72.)')
+    graph3 = lightgbm.create_tree_digraph(clf, tree_index=71, name='Finale Baum')
+    graph3.render(view=True)
+    plt.show(graph3)
+
     #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
     #plt.show()
     #pred_string=np.array_str(y_pred)
-   #with open('pred_file.txt','w') as f:
+    #with open('pred_file.txt','w') as f:
        # f.write(pred_string)
     
 
