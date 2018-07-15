@@ -64,6 +64,7 @@ class DataHandler:
     "WARRANTS": 37,
     "WEAPON LAWS": 38}
 
+
     def __init__(self):
         self.training_data = None
         self.testing_data = None
@@ -146,8 +147,9 @@ def readF(path, index):
     df['AddressSuffix'] = df['Address'].str[-2:]
     df['Address'] = df['Address'].str.upper()
     df['DayOfWeek'] = df['DayOfWeek'].str.upper()
-    df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
-    df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y) 
+    if (path == 'train.csv'):
+        df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
+        df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y) 
     df = df[df.X != 0]
     df = df[df.Y != 0]
 
@@ -233,12 +235,61 @@ def lgbm(data_set):
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
 
     y_pred = clf.predict(test_x)
+    test_x['CategoryPred'] = y_pred
+    mapping_category = {0: "ARSON",
+    1: "ASSAULT",
+    2: "BAD CHECKS",
+    3: "BRIBERY",
+    4: "BURGLARY",
+    5: "DISORDERLY CONDUCT",
+    6: "DRIVING UNDER THE INFLUENCE",
+    7: "DRUG/NARCOTIC",
+    8: "DRUNKENNESS",
+    9: "EMBEZZLEMENT",
+    10: "EXTORTION",
+    11: "FAMILY OFFENSES",
+    12: "FORGERY/COUNTERFEITING",
+    13: "FRAUD",
+    14: "GAMBLING",
+    15: "KIDNAPPING",
+    16: "LARCENY/THEFT",
+    17: "LIQUOR LAWS",
+    18: "LOITERING",
+    19: "MISSING PERSON",
+    20: "NON-CRIMINAL",
+    21: "OTHER OFFENSES",
+    22: "PORNOGRAPHY/OBSCENE MAT",
+    23: "PROSTITUTION",
+    24: "RECOVERED VEHICLE",
+    25: "ROBBERY",
+    26: "RUNAWAY",
+    27: "SECONDARY CODES",
+    28: "SEX OFFENSES FORCIBLE",
+    29: "SEX OFFENSES NON FORCIBLE",
+    30: "STOLEN PROPERTY",
+    31: "SUICIDE",
+    32: "SUSPICIOUS OCC",
+    33: "TREA",
+    34: "TRESPASS",
+    35: "VANDALISM",
+    36: "VEHICLE THEFT",
+    37: "WARRANTS",
+    38: "WEAPON LAWS"}
+    test_x['CategoryPred'].replace(mapping_category, inplace = True)
 
+    def write_csv(df, name):
+        rdstr = ".csv"
+        path = name + rdstr
+        print(path)
+        if(os.path.isfile(path) == False):
+            df.to_csv(path_or_buf = path, sep=',', index=False)
+        else:
+            print ('Writing didnt work, because File is already there, pls delete it before')
+    write_csv(test_x, "test_x")
 
     print('Plotte die Features')
-    graph1 = lightgbm.plot_importance(clf, max_num_features=10, name ='importance')
-    graph1.render(view=True)
-    plt.show()
+    graph1 = lightgbm.plot_importance(clf, max_num_features=10, title ='importance')
+    plt.show(graph1)
     
     print('Plotte finalen Baum (1.)')
     graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Erster Baum')
@@ -246,9 +297,10 @@ def lgbm(data_set):
     plt.show(graph2)
     
     print('Plotte finalen Baum (72.)')
-    graph3 = lightgbm.create_tree_digraph(clf, tree_index=71, name='Finale Baum')
+    graph3 = lightgbm.create_tree_digraph(clf, tree_index=71, title='Finale Baum')
     graph3.render(view=True)
     plt.show(graph3)
+    
 
     #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
     #plt.show()
