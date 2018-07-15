@@ -117,7 +117,7 @@ def main():
  
     df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
     test = readF('test.csv', False)
-    useChi(df)
+    #useChi(df)
     dh = DataHandler()
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
@@ -228,19 +228,10 @@ def lgbm(data_set):
         
     print ('setup training and eval')
     lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
-    lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)
-    print(np.unique(y_train_split_t))
-    
-    
-    
-    #class_weights bringt keine Verbesserung
-    #class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train_split_t), y_train_split_t)
-    #class_weights_mapping = {}
-    #for i in range(39):
-        #class_weights_mapping[i]= class_weights[i]
-    
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1, n_estimators=100, subsample_for_bin=200000,  objective='multiclass', silent=False )
+    lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=50, subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
+
     y_pred = clf.predict(test_x)
     print(y_pred)
     #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
@@ -255,9 +246,11 @@ def lgbm(data_set):
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40207 ohne Day und DayOfWeek - Iteration 127 - Danach Anstieg - [StandardConfig]
 #Multi_LogLoss bei 2.37697 ohne Day und DayOfWeek - Iteration 100
-#Multi_LogLoss bei 2.35994 ohne Day und DayOfWeek - Iteration 63 - Danach Anstieg - [StandardConfig] + num_leaves = 1521
-#Multi_LogLoss bei 2.35076 ohne Day und DayOfWeek - Iteration 72 - Danach Anstieg - [StandardConfig] + num_leaves = 1000
-#Multi_LogLoss bei 2.31725 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves = 1000
+#Multi_LogLoss bei 2.35994 ohne Day und DayOfWeek - Iteration 63 - Danach Anstieg - [StandardConfig] + num_leaves=1521
+#Multi_LogLoss bei 2.35076 ohne Day und DayOfWeek - Iteration 72 - Danach Anstieg - [StandardConfig] + num_leaves=1000
+#Multi_LogLoss bei 2.31725 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves=1000
+#Multi_LogLoss bei 2.317 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves=1000 + min_child_samples=50 + subsample_for_bin=400000
+#Multi_LogLoss bei 2.3168 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves=1000 + min_child_samples=50 + subsample_for_bin=200000
 
 #Aufrufen der Ausführung, bitte ganz unten
 main()
