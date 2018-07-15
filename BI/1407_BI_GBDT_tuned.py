@@ -16,7 +16,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight
-os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
+#from graphviz import digraph
 
 
 class DataHandler:
@@ -64,7 +64,7 @@ class DataHandler:
     "WARRANTS": 37,
     "WEAPON LAWS": 38}
 
-
+        
     def __init__(self):
         self.training_data = None
         self.testing_data = None
@@ -116,20 +116,65 @@ class DataHandler:
 
 def main():
  
+    mapping_category = {0: "ARSON",
+    1: "ASSAULT",
+    2: "BAD CHECKS",
+    3: "BRIBERY",
+    4: "BURGLARY",
+    5: "DISORDERLY CONDUCT",
+    6: "DRIVING UNDER THE INFLUENCE",
+    7: "DRUG/NARCOTIC",
+    8: "DRUNKENNESS",
+    9: "EMBEZZLEMENT",
+    10: "EXTORTION",
+    11: "FAMILY OFFENSES",
+    12: "FORGERY/COUNTERFEITING",
+    13: "FRAUD",
+    14: "GAMBLING",
+    15: "KIDNAPPING",
+    16: "LARCENY/THEFT",
+    17: "LIQUOR LAWS",
+    18: "LOITERING",
+    19: "MISSING PERSON",
+    20: "NON-CRIMINAL",
+    21: "OTHER OFFENSES",
+    22: "PORNOGRAPHY/OBSCENE MAT",
+    23: "PROSTITUTION",
+    24: "RECOVERED VEHICLE",
+    25: "ROBBERY",
+    26: "RUNAWAY",
+    27: "SECONDARY CODES",
+    28: "SEX OFFENSES FORCIBLE",
+    29: "SEX OFFENSES NON FORCIBLE",
+    30: "STOLEN PROPERTY",
+    31: "SUICIDE",
+    32: "SUSPICIOUS OCC",
+    33: "TREA",
+    34: "TRESPASS",
+    35: "VANDALISM",
+    36: "VEHICLE THEFT",
+    37: "WARRANTS",
+    38: "WEAPON LAWS"}
+    
     df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
     test = readF('test.csv', False)
     #useChi(df)
     dh = DataHandler()
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
-    #  with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        #print(data_sets)
-        #exit()
+    test['CategoryPred']=lgbm(data_sets)
+    test['CategoryPred']=test['CategoryPred'].map(mapping_category)
+    print(test)
     
-    resulttrain= lgbm(data_sets)
-    print(resulttrain)
-    exit()
-    
+    def write_csv(df, name):
+        rdstr = ".csv"
+        path = name + rdstr
+        print(path)
+        if(os.path.isfile(path) == False):
+            df.to_csv(path_or_buf = path, sep=',', index=False)
+        else:
+            print ('Writing didnt work, because File is already there, pls delete it before')
+    write_csv(test, "test_with_pred_final")
 
 
 def readF(path, index):
@@ -150,8 +195,8 @@ def readF(path, index):
     if (path == 'train.csv'):
         df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
         df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y) 
-    df = df[df.X != 0]
-    df = df[df.Y != 0]
+        df = df[df.X != 0]
+        df = df[df.Y != 0]
 
       
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):   
@@ -231,84 +276,26 @@ def lgbm(data_set):
     print ('setup training and eval')
     lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
     lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=50, subsample_for_bin=200000,  objective='multiclass', silent=False )
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=70, subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
 
     y_pred = clf.predict(test_x)
-    test_x['CategoryPred'] = y_pred
-    mapping_category = {0: "ARSON",
-    1: "ASSAULT",
-    2: "BAD CHECKS",
-    3: "BRIBERY",
-    4: "BURGLARY",
-    5: "DISORDERLY CONDUCT",
-    6: "DRIVING UNDER THE INFLUENCE",
-    7: "DRUG/NARCOTIC",
-    8: "DRUNKENNESS",
-    9: "EMBEZZLEMENT",
-    10: "EXTORTION",
-    11: "FAMILY OFFENSES",
-    12: "FORGERY/COUNTERFEITING",
-    13: "FRAUD",
-    14: "GAMBLING",
-    15: "KIDNAPPING",
-    16: "LARCENY/THEFT",
-    17: "LIQUOR LAWS",
-    18: "LOITERING",
-    19: "MISSING PERSON",
-    20: "NON-CRIMINAL",
-    21: "OTHER OFFENSES",
-    22: "PORNOGRAPHY/OBSCENE MAT",
-    23: "PROSTITUTION",
-    24: "RECOVERED VEHICLE",
-    25: "ROBBERY",
-    26: "RUNAWAY",
-    27: "SECONDARY CODES",
-    28: "SEX OFFENSES FORCIBLE",
-    29: "SEX OFFENSES NON FORCIBLE",
-    30: "STOLEN PROPERTY",
-    31: "SUICIDE",
-    32: "SUSPICIOUS OCC",
-    33: "TREA",
-    34: "TRESPASS",
-    35: "VANDALISM",
-    36: "VEHICLE THEFT",
-    37: "WARRANTS",
-    38: "WEAPON LAWS"}
-    test_x['CategoryPred'].replace(mapping_category, inplace = True)
+    return(y_pred)
+    
+    
+    """
+    test_x = test_x['CategoryPred'].map(test_x.mapping_category)
 
     def write_csv(df, name):
         rdstr = ".csv"
         path = name + rdstr
         print(path)
         if(os.path.isfile(path) == False):
-            df.to_csv(path_or_buf = path, sep=',', index=False)
+            df.to_csv(path_or_buf = path ,sep=',', index=False)
         else:
             print ('Writing didnt work, because File is already there, pls delete it before')
-    write_csv(test_x, "test_x")
-
-    print('Plotte die Features')
-    graph1 = lightgbm.plot_importance(clf, max_num_features=10, title ='importance')
-    plt.show(graph1)
-    
-    print('Plotte finalen Baum (1.)')
-    graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Erster Baum')
-    graph2.render(view=True)
-    plt.show(graph2)
-    
-    print('Plotte finalen Baum (72.)')
-    graph3 = lightgbm.create_tree_digraph(clf, tree_index=71, title='Finale Baum')
-    graph3.render(view=True)
-    plt.show(graph3)
-    
-
-    #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
-    #plt.show()
-    #pred_string=np.array_str(y_pred)
-    #with open('pred_file.txt','w') as f:
-       # f.write(pred_string)
-    
-
+    write_csv(test_x, test_x)
+    """
 
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
