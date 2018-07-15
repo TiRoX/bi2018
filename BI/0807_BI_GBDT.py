@@ -16,7 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-#os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
+os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
 
 '''
 Hi, My name is Kevin. If ure reading this, youre probably reading it on your screen~
@@ -262,9 +262,9 @@ def lgbm(data_set):
     # plt.show(ax)
 
     print('Plotte die Features')
-    graph1 = lightgbm.plot_importance(gbm, max_num_features=10)
-    graph1.render(view=True)
-    plt.show(graph1)
+    #graph1 = lightgbm.plot_importance(clf, max_num_features=10, name ='importance')
+    #graph1.render(view=True)
+    #plt.show(graph1)
     
     print('Plotte finalen Baum (1.)')
     graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Erster Baum')
