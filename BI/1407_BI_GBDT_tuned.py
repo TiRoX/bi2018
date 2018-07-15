@@ -127,6 +127,61 @@ def main():
         #exit()
     
     resulttrain= lgbm(data_sets)
+    result_x = readF('test.csv', False)
+    
+    result_x['CategoryPred'] = resulttrain
+    mapping_category = {0: "ARSON",
+    1: "ASSAULT",
+    2: "BAD CHECKS",
+    3: "BRIBERY",
+    4: "BURGLARY",
+    5: "DISORDERLY CONDUCT",
+    6: "DRIVING UNDER THE INFLUENCE",
+    7: "DRUG/NARCOTIC",
+    8: "DRUNKENNESS",
+    9: "EMBEZZLEMENT",
+    10: "EXTORTION",
+    11: "FAMILY OFFENSES",
+    12: "FORGERY/COUNTERFEITING",
+    13: "FRAUD",
+    14: "GAMBLING",
+    15: "KIDNAPPING",
+    16: "LARCENY/THEFT",
+    17: "LIQUOR LAWS",
+    18: "LOITERING",
+    19: "MISSING PERSON",
+    20: "NON-CRIMINAL",
+    21: "OTHER OFFENSES",
+    22: "PORNOGRAPHY/OBSCENE MAT",
+    23: "PROSTITUTION",
+    24: "RECOVERED VEHICLE",
+    25: "ROBBERY",
+    26: "RUNAWAY",
+    27: "SECONDARY CODES",
+    28: "SEX OFFENSES FORCIBLE",
+    29: "SEX OFFENSES NON FORCIBLE",
+    30: "STOLEN PROPERTY",
+    31: "SUICIDE",
+    32: "SUSPICIOUS OCC",
+    33: "TREA",
+    34: "TRESPASS",
+    35: "VANDALISM",
+    36: "VEHICLE THEFT",
+    37: "WARRANTS",
+    38: "WEAPON LAWS"}
+    result_x['CategoryPred'].replace(mapping_category, inplace = True)
+    
+
+    def write_csv(df, name):
+        rdstr = ".csv"
+        path = name + rdstr
+        print(path)
+        if(os.path.isfile(path) == False):
+            df.to_csv(path_or_buf = path, sep=',', index=True)
+        else:
+            print ('Writing didnt work, because File is already there, pls delete it before')
+    write_csv(result_x, "test_x")
+
     print(resulttrain)
     exit()
     
@@ -231,76 +286,14 @@ def lgbm(data_set):
     print ('setup training and eval')
     lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
     lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=50, subsample_for_bin=200000,  objective='multiclass', silent=False )
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=80, subsample_for_bin=200000,  objective='softprob', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
+    print(clf.score(x_train_split_t, y_train_split_t))
 
     y_pred = clf.predict(test_x)
-    test_x['CategoryPred'] = y_pred
-    mapping_category = {0: "ARSON",
-    1: "ASSAULT",
-    2: "BAD CHECKS",
-    3: "BRIBERY",
-    4: "BURGLARY",
-    5: "DISORDERLY CONDUCT",
-    6: "DRIVING UNDER THE INFLUENCE",
-    7: "DRUG/NARCOTIC",
-    8: "DRUNKENNESS",
-    9: "EMBEZZLEMENT",
-    10: "EXTORTION",
-    11: "FAMILY OFFENSES",
-    12: "FORGERY/COUNTERFEITING",
-    13: "FRAUD",
-    14: "GAMBLING",
-    15: "KIDNAPPING",
-    16: "LARCENY/THEFT",
-    17: "LIQUOR LAWS",
-    18: "LOITERING",
-    19: "MISSING PERSON",
-    20: "NON-CRIMINAL",
-    21: "OTHER OFFENSES",
-    22: "PORNOGRAPHY/OBSCENE MAT",
-    23: "PROSTITUTION",
-    24: "RECOVERED VEHICLE",
-    25: "ROBBERY",
-    26: "RUNAWAY",
-    27: "SECONDARY CODES",
-    28: "SEX OFFENSES FORCIBLE",
-    29: "SEX OFFENSES NON FORCIBLE",
-    30: "STOLEN PROPERTY",
-    31: "SUICIDE",
-    32: "SUSPICIOUS OCC",
-    33: "TREA",
-    34: "TRESPASS",
-    35: "VANDALISM",
-    36: "VEHICLE THEFT",
-    37: "WARRANTS",
-    38: "WEAPON LAWS"}
-    test_x['CategoryPred'].replace(mapping_category, inplace = True)
-
-    def write_csv(df, name):
-        rdstr = ".csv"
-        path = name + rdstr
-        print(path)
-        if(os.path.isfile(path) == False):
-            df.to_csv(path_or_buf = path, sep=',', index=False)
-        else:
-            print ('Writing didnt work, because File is already there, pls delete it before')
-    write_csv(test_x, "test_x")
-
-    print('Plotte die Features')
-    graph1 = lightgbm.plot_importance(clf, max_num_features=10, title ='importance')
-    plt.show(graph1)
     
-    print('Plotte finalen Baum (1.)')
-    graph2 = lightgbm.create_tree_digraph(clf, tree_index=0, name='Erster Baum')
-    graph2.render(view=True)
-    plt.show(graph2)
-    
-    print('Plotte finalen Baum (72.)')
-    graph3 = lightgbm.create_tree_digraph(clf, tree_index=71, title='Finale Baum')
-    graph3.render(view=True)
-    plt.show(graph3)
-    
+    return (y_pred)
+        
 
     #ax = lightgbm.plot_tree(clf, tree_index=83, figsize=(20, 8), show_info=['split_gain'])
     #plt.show()
