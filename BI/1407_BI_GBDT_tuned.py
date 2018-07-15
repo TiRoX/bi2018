@@ -273,9 +273,7 @@ def lgbm(data_set):
     y_test_split_t = data_set['y_test_split']
     test_x = data_set['test_x']
         
-    print ('setup training and eval')
-    lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
-    lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
+    print ('setup training and eval')   
     clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=70, subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
     print(clf.score(x_train_split_t, y_train_split_t))
