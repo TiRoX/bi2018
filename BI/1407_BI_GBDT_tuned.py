@@ -278,24 +278,11 @@ def lgbm(data_set):
     lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
     clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=70, subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
-
+    print(clf.score(x_train_split_t, y_train_split_t))
+    print(clf.score(x_test_split_t, y_test_split_t))
     y_pred = clf.predict(test_x)
     return(y_pred)
     
-    
-    """
-    test_x = test_x['CategoryPred'].map(test_x.mapping_category)
-
-    def write_csv(df, name):
-        rdstr = ".csv"
-        path = name + rdstr
-        print(path)
-        if(os.path.isfile(path) == False):
-            df.to_csv(path_or_buf = path ,sep=',', index=False)
-        else:
-            print ('Writing didnt work, because File is already there, pls delete it before')
-    write_csv(test_x, test_x)
-    """
 
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
