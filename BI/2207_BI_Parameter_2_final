@@ -318,7 +318,9 @@ def lgbm(data_set):
     return(y_pred)
 
 
-# MLL bei 2.31613 nach 73. Iteration. Danach Anstieg.     
+# MLL bei 2.31613 nach 73. Iteration. Danach Anstieg.
+# Accuracy(train_split) = 53,5 %
+# Accuracy(train_test_split) = 30,5 %
 
 
 #Aufrufen der Ausführung, bitte ganz unten
