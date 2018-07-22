@@ -16,6 +16,8 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight
+from sklearn.metrics import confusion_matrix
+#from graphviz import digraph
 
 
 class DataHandler:
@@ -161,74 +163,9 @@ def main():
     dh = DataHandler()
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
-<<<<<<< HEAD
-    #  with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        #print(data_sets)
-        #exit()
-    
-    resulttrain= lgbm(data_sets)
-    result_x = readF('test.csv', False)
-    
-    result_x['CategoryPred'] = resulttrain
-    mapping_category = {0: "ARSON",
-    1: "ASSAULT",
-    2: "BAD CHECKS",
-    3: "BRIBERY",
-    4: "BURGLARY",
-    5: "DISORDERLY CONDUCT",
-    6: "DRIVING UNDER THE INFLUENCE",
-    7: "DRUG/NARCOTIC",
-    8: "DRUNKENNESS",
-    9: "EMBEZZLEMENT",
-    10: "EXTORTION",
-    11: "FAMILY OFFENSES",
-    12: "FORGERY/COUNTERFEITING",
-    13: "FRAUD",
-    14: "GAMBLING",
-    15: "KIDNAPPING",
-    16: "LARCENY/THEFT",
-    17: "LIQUOR LAWS",
-    18: "LOITERING",
-    19: "MISSING PERSON",
-    20: "NON-CRIMINAL",
-    21: "OTHER OFFENSES",
-    22: "PORNOGRAPHY/OBSCENE MAT",
-    23: "PROSTITUTION",
-    24: "RECOVERED VEHICLE",
-    25: "ROBBERY",
-    26: "RUNAWAY",
-    27: "SECONDARY CODES",
-    28: "SEX OFFENSES FORCIBLE",
-    29: "SEX OFFENSES NON FORCIBLE",
-    30: "STOLEN PROPERTY",
-    31: "SUICIDE",
-    32: "SUSPICIOUS OCC",
-    33: "TREA",
-    34: "TRESPASS",
-    35: "VANDALISM",
-    36: "VEHICLE THEFT",
-    37: "WARRANTS",
-    38: "WEAPON LAWS"}
-    result_x['CategoryPred'].replace(mapping_category, inplace = True)
-    
-
-    def write_csv(df, name):
-        rdstr = ".csv"
-        path = name + rdstr
-        print(path)
-        if(os.path.isfile(path) == False):
-            df.to_csv(path_or_buf = path, sep=',', index=True)
-        else:
-            print ('Writing didnt work, because File is already there, pls delete it before')
-    write_csv(result_x, "test_x")
-
-    print(resulttrain)
-    exit()
-=======
     test['CategoryPred']=lgbm(data_sets)
     test['CategoryPred']=test['CategoryPred'].map(mapping_category)
     print(test)
->>>>>>> 0c60c9a8157bb52bf52792fa3cbba34dc7bd9fb8
     
     def write_csv(df, name):
         rdstr = ".csv"
@@ -337,27 +274,18 @@ def lgbm(data_set):
     y_test_split_t = data_set['y_test_split']
     test_x = data_set['test_x']
         
-<<<<<<< HEAD
-    print ('setup training and eval')
-    lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
-    lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=80, subsample_for_bin=200000,  objective='softprob', silent=False )
-    clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
-    print(clf.score(x_train_split_t, y_train_split_t))
-
-    y_pred = clf.predict(test_x)
-=======
     print ('setup training and eval')   
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=70, subsample_for_bin=200000,  objective='multiclass', silent=False )
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=70,class_weight='balanced', subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
     print(clf.score(x_train_split_t, y_train_split_t))
-    print(clf.score(x_test_split_t, y_test_split_t))
+    #print(clf.score(x_test_split_t, y_test_split_t))
     y_pred = clf.predict(test_x)
     return(y_pred)
->>>>>>> 0c60c9a8157bb52bf52792fa3cbba34dc7bd9fb8
+    labels_c_m= ["ARSON", "ASSAULT", "BAD CHECKS", "BRIBERY", "BURGLARY", "DISORDERLY CONDUCT", "DRIVING UNDER THE INFLUENCE", "DRUG/NARCOTIC", "DRUNKENNESS", "EMBEZZLEMENT", "EXTORTION", "FAMILY OFFENSES", 
+"FORGERY/COUNTERFEITING", "FRAUD", "GAMBLING", "KIDNAPPING", "LARCENY/THEFT", "LIQUOR LAWS", "LOITERING", "MISSING PERSON", "NON-CRIMINAL", "OTHER OFFENSES", "PROSTITUTION", "RECOVERED VEHICLE", "ROBBERY",
+    "RUNAWAY", "SECONDARY CODES", "SEX OFFENSES FORCIBLE", "SEX OFFENSES NON FORCIBLE", "STOLEN PROPERTY", "SUICIDE", "SUSPICIOUS OCC", "TRESPASS", "VANDALISM", "VEHICLE THEFT", "WARRANTS", "WEAPON LAWS"]
+    #confusion_matrix(y_train_split_t, y_pred, labels=labels_c_m)
     
-    return (y_pred)
-        
 
 #Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
 #Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]

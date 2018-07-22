@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-@author: TheUniverse
+@author: Marco Andrè Gut, Kevin Konrad, Felix Mertineit, Martin Moosbauer
 '''
 
 
@@ -16,13 +16,21 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight
+from sklearn.metrics import confusion_matrix
 
 
+#Enthält:
+# - 1 Erstetllung eines Dictionaries für Labeling der kategorischen Variablen
+# - 2 Datentransformierung wobei ein großes Dataframe für die Daten aus train.csv und test.csv erstellt wird
+# - 3 Deklarieriung der kategorischen und numerischen unabhängigen Variablen die für unser Modell verwendet werden sollen
+# - 4 Splitten des train.csv für Cross Validation
+# - 5 Funktion für Labeling der kategorischen unabhängigen Variable
+# - 6 Funktion zur Skalierung der numerischen unabhängigen Variable
 class DataHandler:
- 
+#Quelle: 
     training_data = None
     testing_data = None
-
+    # - 1 Erstetllung eines Dictionaries für Labeling der kategorischen Variablen
     category_mapping = {"ARSON": 0,
     "ASSAULT": 1,
     "BAD CHECKS": 2,
@@ -73,48 +81,55 @@ class DataHandler:
         self.training_data = train
         self.testing_data = test
 
-    #  <big_data> DataFrame erstellen um  feature preprocessing zu vereinfachen
-    #  Ausgabe ist ein Dictionary wo train-Datensatz aufgeteilt wird.
+    # - 2 Datentransformierung wobei ein übergreifendes Dataframe für die Daten aus train.csv und test.csv erstellt 
     def transform_data(self, with_mask=1):
         features_columns = [ 'Year', 'Month', 'Hour','Address', 'AddressSuffix', 'PdDistrict', 'X', 'Y']  #[ 'Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
+        #Deklarierung übergreifendes Dataframe
         big_data = self.training_data[features_columns].append(self.testing_data[features_columns])
 
+        # - 3 Deklarierung der kategorischen und numerischen unabhängigen Variablen die für unser Modell verwendet werden sollen
         categorical_features = ['Year', 'Month', 'Hour','Address', 'AddressSuffix', 'PdDistrict']
         numerical_features = ['X', 'Y']
-        
-            
-        print ('Encoding der Features')
+                    
+        print ('LabelEncoding der kategorischen Features')
         big_data = self.categorical_encoder(big_data, categorical_features)
-        print ('Skalieren der Longitude und Latitude')
+        print ('Skalieren der Longitude und Latitude (numerische Features)')
         big_data = self.features_preprocessing(big_data, numerical_features)
+        
+        # - Deklarierung der unabhängigen Variablen und abhängigen Variablen aus übergreifendem DataFrame. Inkl. LabelEncoding mit Dictionary
         train_X = big_data[0:self.training_data.shape[0]]
         train_Y = self.training_data['Category'].map(self.category_mapping)
         test_x = big_data[self.training_data.shape[0]::]
-
+        
+        
         if with_mask != 1:
             mask = np.random.rand(len(self.training_data)) < with_mask
             train_X = train_X[mask]
             train_Y = train_Y[mask]
+        
+        # - 4 Splitten des train.csv für Cross Validation
         print ('Splitten des Datensatzes für Validierung bei Modelerstellung')
         x_train_split, x_test_split, y_train_split, y_test_split = train_test_split(train_X, train_Y, test_size=0.3, random_state=42) #random_state
+        
         return {'x_train_split': x_train_split, 'y_train_split': y_train_split, 'x_test_split': x_test_split, 'y_test_split': y_test_split, 'test_x': test_x}
 
-    
+    # - 5 Funktion für Labeling der kategorischen unabhängigen Variable
     def features_preprocessing(self, data, numerical_columns):
         for num_col in numerical_columns:
             data[num_col] = preprocessing.scale(data[num_col])
         return data
-
+    # - 6 Funktion zur Skalierung der numerischen unabhängigen Variable
     def categorical_encoder(self, data, categorical_columns):
         le = LabelEncoder()
         for cat_col in categorical_columns:
             data[cat_col] = le.fit_transform(data[cat_col])
         return data
 
-
-
+#Enthält:
+# -  7 Erstellung eines reversed Dictionaries für Identifizierung der kategorischen Variablen 
+# -  8 Aufrufen der Funktionen von Data Preparation, Modeling und Evaluation
 def main():
- 
+    # -  7 Erstellung eines reversed Dictionaries für Identifizierung der kategorischen Variablen 
     mapping_category = {0: "ARSON",
     1: "ASSAULT",
     2: "BAD CHECKS",
@@ -155,81 +170,19 @@ def main():
     37: "WARRANTS",
     38: "WEAPON LAWS"}
     
-    df = readF("train.csv", True) # True wenn Index im File vorhanden, wie hier.
+    # -  8 Aufrufen der Funktionen von Data Preparation, Modeling und Evaluation
+    df = readF("train.csv", True) 
     test = readF('test.csv', False)
     #useChi(df)
     dh = DataHandler()
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
-<<<<<<< HEAD
-    #  with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):
-        #print(data_sets)
-        #exit()
-    
-    resulttrain= lgbm(data_sets)
-    result_x = readF('test.csv', False)
-    
-    result_x['CategoryPred'] = resulttrain
-    mapping_category = {0: "ARSON",
-    1: "ASSAULT",
-    2: "BAD CHECKS",
-    3: "BRIBERY",
-    4: "BURGLARY",
-    5: "DISORDERLY CONDUCT",
-    6: "DRIVING UNDER THE INFLUENCE",
-    7: "DRUG/NARCOTIC",
-    8: "DRUNKENNESS",
-    9: "EMBEZZLEMENT",
-    10: "EXTORTION",
-    11: "FAMILY OFFENSES",
-    12: "FORGERY/COUNTERFEITING",
-    13: "FRAUD",
-    14: "GAMBLING",
-    15: "KIDNAPPING",
-    16: "LARCENY/THEFT",
-    17: "LIQUOR LAWS",
-    18: "LOITERING",
-    19: "MISSING PERSON",
-    20: "NON-CRIMINAL",
-    21: "OTHER OFFENSES",
-    22: "PORNOGRAPHY/OBSCENE MAT",
-    23: "PROSTITUTION",
-    24: "RECOVERED VEHICLE",
-    25: "ROBBERY",
-    26: "RUNAWAY",
-    27: "SECONDARY CODES",
-    28: "SEX OFFENSES FORCIBLE",
-    29: "SEX OFFENSES NON FORCIBLE",
-    30: "STOLEN PROPERTY",
-    31: "SUICIDE",
-    32: "SUSPICIOUS OCC",
-    33: "TREA",
-    34: "TRESPASS",
-    35: "VANDALISM",
-    36: "VEHICLE THEFT",
-    37: "WARRANTS",
-    38: "WEAPON LAWS"}
-    result_x['CategoryPred'].replace(mapping_category, inplace = True)
-    
-
-    def write_csv(df, name):
-        rdstr = ".csv"
-        path = name + rdstr
-        print(path)
-        if(os.path.isfile(path) == False):
-            df.to_csv(path_or_buf = path, sep=',', index=True)
-        else:
-            print ('Writing didnt work, because File is already there, pls delete it before')
-    write_csv(result_x, "test_x")
-
-    print(resulttrain)
-    exit()
-=======
+    #Speichern der Predictions in die Spalte CategoryPred
     test['CategoryPred']=lgbm(data_sets)
+    # Reversed LabelEncoding mit Dictionary für interpretierbare Ausgabe
     test['CategoryPred']=test['CategoryPred'].map(mapping_category)
     print(test)
->>>>>>> 0c60c9a8157bb52bf52792fa3cbba34dc7bd9fb8
-    
+    #Schreiben des Ergebnisses in eine CSV
     def write_csv(df, name):
         rdstr = ".csv"
         path = name + rdstr
@@ -237,17 +190,24 @@ def main():
         if(os.path.isfile(path) == False):
             df.to_csv(path_or_buf = path, sep=',', index=False)
         else:
-            print ('Writing didnt work, because File is already there, pls delete it before')
+            print ('Datei konnte nicht geschrieben werden, da bereits vorhanden. Bitte löschen oder anderen Namen geben.')
     write_csv(test, "test_with_pred_final")
 
-
+    
+#Enthält
+# - 9 Einlesen der CSV Datei inklusive Überprüfung ob train.csv oder test.csv über den vorhandenen Index
+# - 10 Transformierung von Date, Adress, DayOfWeek und löschen der Longitudes und Latitudes außerhalb von SF
+# - 11 Löschen von Feature Dates für train.csv und test.csv. Löschen von Feature Descript und Resolution für train.csv
+# - 12 Funktion für Erstellung von Feature Season 
 def readF(path, index):
+# - 9 Einlesen der CSV Datei inklusive Überprüfung ob train.csv oder test.csv über den vorhandenen Index
     print('Reading: ', path)
     if (index == True):
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"Address": str, "AddressSuffix": str, 'X': float, 'Y': float}) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"Address": str, "AddressSuffix": str, 'X': float, 'Y': float}) 
     else:
-        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"Address": str, "AddressSuffix": str, 'X': float, 'Y': float}, index_col=0) # , dtype={"Date": str, "Time": str, "Year": int, "Month": int, "Day": int, "Hour": int, "Season": str,  "Descript": str, "DayOfWeek": str, "PdDistrict": str, "Resolution": str, "Address": str, "AdressSuffix": str, "X": str, "Y": str} columns mit (delimiter";"), die headzeile ist die 0., dtype bestimmt datentyp der Columns
-    print('Transforming', path)
+        df = pd.read_csv(path, delimiter= ',', quotechar='"', header = 0, error_bad_lines=False, dtype={"Address": str, "AddressSuffix": str, 'X': float, 'Y': float}, index_col=0) 
+# - 10 Transformierung von Date, Adress, DayOfWeek und löschen der Longitudes und Latitudes außerhalb von SF    
+    print('Transformierung von Date, Adress, DayOfWeek und löschen der Longitudes und Latitudes außerhalb von SF', path)
     df['Year'] = df['Dates'].str[:4]
     df['Month'] = df['Dates'].str[5:7]
     df['Day'] = df['Dates'].str[8:10]
@@ -257,12 +217,12 @@ def readF(path, index):
     df['Address'] = df['Address'].str.upper()
     df['DayOfWeek'] = df['DayOfWeek'].str.upper()
     if (path == 'train.csv'):
-        df['X'] = df['X'].apply(lambda x: 0 if float(x)>=-122.3649 or float(x)<=-122.5136 else x)
-        df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<=37.70788 or float(y)>=37.81998 else y) 
+        df['X'] = df['X'].apply(lambda x: 0 if float(x)>-122.3649 or float(x)<-122.5136 else x)
+        df['Y'] = df['Y'].apply(lambda y: 0 if float(y)<37.70788 or float(y)>37.81998 else y) 
         df = df[df.X != 0]
         df = df[df.Y != 0]
 
-      
+    # - 11 Löschen von Feature Dates für train.csv und test.csv. Löschen von Feature Descript und Resolution für train.csv
     with pd.option_context('display.max_rows', 11, 'display.max_columns', 200):   
         df = df.drop('Dates', 1)
         #df = df.drop('Address', 1)
@@ -273,6 +233,7 @@ def readF(path, index):
     #print(df)
     return df
 
+# - 12 Funktion für Erstellung von Feature Season 
 def get_season(row):
     if 3 <= int(row['Dates'][5:7]) <= 5:
         return "SPRING"
@@ -283,13 +244,11 @@ def get_season(row):
     else: return "WINTER"
     
 
-"""
-Feature Extraction
-Feature Extraction mit ChiSquare Test, welcher Wert nimmt am meisten Einfluß wenn Null Hypothese gilt
-Chi-Square Erklärung 5-min YouTube: https://www.youtube.com/watch?v=VskmMgXmkMQ ;; Besser: https://www.youtube.com/watch?v=WXPBoFDqNVk (12 min)
-Quelle: http://www.handsonmachinelearning.com/blog/2AeuRL/chi-square-feature-selection-in-python
-"""
+#Enthält
+# - 13 Drucken der Ergebnisse der ChiSquare-Auswertung
+# - 14 Berechnung der ChiSquare Werte für eine Kombination von abhängige Variable Y (Category) und unabhängige Variable X
 class ChiSquare:
+# In Anlehnung an: http://www.handsonmachinelearning.com/blog/2AeuRL/chi-square-feature-selection-in-python    
     def __init__(self, dataframe):
         self.df = dataframe
         self.p = None #P-Value
@@ -298,7 +257,7 @@ class ChiSquare:
         self.dfTabular = None
         self.dfExpected = None
         
-   
+    # - 13 Drucken der Ergebnisse der ChiSquare-Auswertung   
     def _print_chisquare_result(self, colX, alpha):
         result = ""
         if self.p<alpha: # If P is low, Ho (null hypothesis) must go...  - alpha is der Wert der bestimmt ob Null Hypothese zutrifft oder nicht
@@ -308,6 +267,7 @@ class ChiSquare:
 
         print(result)
 
+    # - 14 Berechnung der ChiSquare Werte für eine Kombination von abhängige Variable Y (Category) und unabhängige Variable X
     def TestIndependence(self,colX,colY, alpha=0.1): 
         X = self.df[colX].astype(str)
         Y = self.df[colY].astype(str) 
@@ -322,52 +282,46 @@ class ChiSquare:
 
         self._print_chisquare_result(colX, alpha)
 
-#Feature Selection
+        
+# - 15 Sequenzielle Durchführung von ChiSquare für kategorische und numerische Features bzw. unabhängigen Variablen
 def useChi(df):
-    testColumns = ['Year', 'Month', 'Hour', 'Address', 'AddressSuffix', 'PdDistrict', 'X', 'Y'] #['Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
-    for var in testColumns: #Für jede einzelne Column wird  Chi-Square ausgeführt
+    testColumns = ['Year', 'Month', 'Hour', 'Address', 'AddressSuffix', 'PdDistrict', 'X', 'Y'] 
+    for var in testColumns:
         ChiSquare(df).TestIndependence(colX=var,colY="Category") #Aufruf des Chi-Square Test mit Category als abhängiges Features
 
+        
+#Enthält
+# - 16 Aufteilung des dataframes 'data_set' für Modeling und Evaluation
+# - 17 Aufstellen und Fitting des Models 
+# - 18 Berechnung der Accuracy für train_split und train_test_split
+# - 19 Erstellung der Predictions
 def lgbm(data_set):
-    # Quelle -> https://github.com/Microsoft/LightGBM/blob/master/tests/python_package_test/test_sklearn.py
-    print ('Aufteilen des Datensatzes nach Feature Preprocessing')
+# Quelle -> https://github.com/Microsoft/LightGBM/blob/master/tests/python_package_test/test_sklearn.py
+    
+    # - 16 Aufteilung des dataframes 'data_set' für Modeling und Evaluation
+    print ('Aufteilen des dataframes data_set für Modeling und Evaluation')
     x_train_split_t = data_set['x_train_split']
     y_train_split_t = data_set['y_train_split']
     x_test_split_t = data_set['x_test_split'] #Erstellung von Test df um auswerten zu könne -> vorher einer unseren großen Fehler
     y_test_split_t = data_set['y_test_split']
     test_x = data_set['test_x']
-        
-<<<<<<< HEAD
-    print ('setup training and eval')
-    lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
-    lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=80, subsample_for_bin=200000,  objective='softprob', silent=False )
+      
+    # - 17 Aufstellen und Fitting des Models         
+    print ('Aufstellen und Fitting des Models')   
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=31, max_depth=-1, learning_rate=0.1,min_child_samples=20, n_estimators=120,subsample_for_bin=200000,  objective='multiclass', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
-    print(clf.score(x_train_split_t, y_train_split_t))
+    
+    # - 18 Berechnung der Accuracy für train_split und train_test_split
+    #print(clf.score(x_train_split_t, y_train_split_t))
+   #print(clf.score(x_test_split_t, y_test_split_t))
 
-    y_pred = clf.predict(test_x)
-=======
-    print ('setup training and eval')   
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=70, subsample_for_bin=200000,  objective='multiclass', silent=False )
-    clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
-    print(clf.score(x_train_split_t, y_train_split_t))
-    print(clf.score(x_test_split_t, y_test_split_t))
+    # - 19 Erstellung der Predictions
     y_pred = clf.predict(test_x)
     return(y_pred)
->>>>>>> 0c60c9a8157bb52bf52792fa3cbba34dc7bd9fb8
-    
-    return (y_pred)
-        
 
-#Multi_LogLoss bei 2.40556 ohne Day und DayOfWeek [StandardConfig]
-#Multi_LogLoss bei 2.40635 mit Day und DayOfWeek [StandardConfig]
-#Multi_LogLoss bei 2.40207 ohne Day und DayOfWeek - Iteration 127 - Danach Anstieg - [StandardConfig]
-#Multi_LogLoss bei 2.37697 ohne Day und DayOfWeek - Iteration 100
-#Multi_LogLoss bei 2.35994 ohne Day und DayOfWeek - Iteration 63 - Danach Anstieg - [StandardConfig] + num_leaves=1521
-#Multi_LogLoss bei 2.35076 ohne Day und DayOfWeek - Iteration 72 - Danach Anstieg - [StandardConfig] + num_leaves=1000
-#Multi_LogLoss bei 2.31725 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves=1000
-#Multi_LogLoss bei 2.317 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves=1000 + min_child_samples=50 + subsample_for_bin=400000
-#Multi_LogLoss bei 2.3168 mit Address und AddressSuffix ohne Day und DayOfWeek - Iteration 70 - Danach Anstieg - [StandardConfig] + num_leaves=1000 + min_child_samples=50 + subsample_for_bin=200000
+
+# MLL bei 2.36943 nach 103. Iteration. Danach Anstieg.     
+
 
 #Aufrufen der Ausführung, bitte ganz unten
 main()
