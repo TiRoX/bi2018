@@ -82,7 +82,7 @@ class DataHandler:
         self.testing_data = test
 
     # - 2 Datentransformierung wobei ein übergreifendes Dataframe für die Daten aus train.csv und test.csv erstellt 
-    def transform_data(self, with_mask=1):
+    def transform_data(self):
         features_columns = [ 'Year', 'Month', 'Hour','Address', 'AddressSuffix', 'PdDistrict', 'X', 'Y']  #[ 'Year', 'Month', 'Day', 'Time', 'DayOfWeek', 'PdDistrict', 'X', 'Y']
         #Deklarierung übergreifendes Dataframe
         big_data = self.training_data[features_columns].append(self.testing_data[features_columns])
@@ -101,12 +101,7 @@ class DataHandler:
         train_Y = self.training_data['Category'].map(self.category_mapping)
         test_x = big_data[self.training_data.shape[0]::]
         
-        
-        if with_mask != 1:
-            mask = np.random.rand(len(self.training_data)) < with_mask
-            train_X = train_X[mask]
-            train_Y = train_Y[mask]
-        
+       
         # - 4 Splitten des train.csv für Cross Validation
         print ('Splitten des Datensatzes für Validierung bei Modelerstellung')
         x_train_split, x_test_split, y_train_split, y_test_split = train_test_split(train_X, train_Y, test_size=0.3, random_state=42) #random_state
@@ -173,8 +168,11 @@ def main():
     # -  8 Aufrufen der Funktionen von Data Preparation, Modeling und Evaluation
     df = readF("train.csv", True) 
     test = readF('test.csv', False)
+    #### Optional use Chi einkommentieren zur Ausführung der ChiSquare Prüfung
     #useChi(df)
+    #Objekt DH wird initialisiert
     dh = DataHandler()
+    #Data sets werden aufbereitet
     dh.load_data(train=df, test=test)
     data_sets = dh.transform_data()
     #Speichern der Predictions in die Spalte CategoryPred
@@ -190,7 +188,7 @@ def main():
         if(os.path.isfile(path) == False):
             df.to_csv(path_or_buf = path, sep=',', index=False)
         else:
-            print ('Datei konnte nicht geschrieben werden, da bereits vorhanden. Bitte löschen oder anderen Namen geben.')
+            print ('Datei konnte nicht geschrieben werden, da bereits vorhanden. Bitte löschen oder umbennenen.')
     write_csv(test, "test_with_pred_final")
 
     
