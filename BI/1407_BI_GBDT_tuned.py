@@ -14,8 +14,6 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-from sklearn.utils import class_weight
 os.environ["PATH"] += os.pathsep + 'H:/workspace coding/graphviz/bin'
 
 
@@ -283,10 +281,8 @@ def lgbm(data_set):
     y_test_split_t = data_set['y_test_split']
     test_x = data_set['test_x']
         
-    print ('setup training and eval')
-    lgb_train = lightgbm.Dataset(x_train_split_t, y_train_split_t)
-    lgb_eval = lightgbm.Dataset(test_x, reference=lgb_train)    
-    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=150, n_estimators=80, subsample_for_bin=200000,  objective='softprob', silent=False )
+    print ('setup training and eval') 
+    clf = lightgbm.LGBMClassifier(boosting_type='gbdt', num_leaves=1000, max_depth=-1, learning_rate=0.1,min_child_samples=50, n_estimators=75, subsample_for_bin=200000,  objective='softprob', silent=False )
     clf.fit(x_train_split_t, y_train_split_t, eval_set=[(x_test_split_t, y_test_split_t)])
     print(clf.score(x_train_split_t, y_train_split_t))
 
@@ -299,7 +295,7 @@ def lgbm(data_set):
     #plt.show()
     #pred_string=np.array_str(y_pred)
     #with open('pred_file.txt','w') as f:
-       # f.write(pred_string)
+    # f.write(pred_string)
     
 
 
