@@ -27,7 +27,7 @@ from sklearn.metrics import confusion_matrix
 # - 5 Funktion für Labeling der kategorischen unabhängigen Variable
 # - 6 Funktion zur Skalierung der numerischen unabhängigen Variable
 class DataHandler:
-#Quelle: 
+#In Anlehnung an: https://github.com/Idraen/kaggle_sf_crime/blob/master/scripts/data_handler.py#L97
     training_data = None
     testing_data = None
     # - 1 Erstetllung eines Dictionaries für Labeling der kategorischen Variablen
